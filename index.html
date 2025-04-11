@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <title>Object Detection Status</title>
@@ -67,7 +67,7 @@
 
   <div class="sensor-status">
     <div id="sensorIndicator" class="sensor-circle"></div>
-    <span id="sensorLabel">กำลังเชื่อมต่อเซนเซอร์...</span>
+    <span id="sensorLabel">กำลังโหลดข้อมูล...</span>
   </div>
 
   <script>
@@ -77,6 +77,7 @@
 
     let lastValue = null;
     let lastUpdated = 0;
+    let firstCheckDone = false;
 
     function updateStatus() {
       fetch(url)
@@ -93,29 +94,38 @@
           const sensorIndicator = document.getElementById("sensorIndicator");
           const sensorLabel = document.getElementById("sensorLabel");
 
-          // ถ้าค่าที่ได้ไม่ valid
+          // ถ้าค่าไม่ valid
           if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
+            if (!firstCheckDone) {
+              // ยังอยู่ในการเช็กครั้งแรก
+              label.textContent = "ไม่มีข้อมูลจากเซนเซอร์ (กำลังตรวจสอบ...)";
+              sensorLabel.textContent = "กำลังตรวจสอบเซนเซอร์...";
+            }
             checkSensorTimeout(now);
             return;
           }
 
-          // ถ้าค่าเปลี่ยนจากรอบก่อนหน้า → เซนเซอร์ทำงาน
+          // ถ้ามีข้อมูลใหม่ → อัปเดตเวลาและแสดงว่าเซนเซอร์ออนไลน์
           if (value !== lastValue) {
             lastValue = value;
             lastUpdated = now;
           }
 
-          // ถ้าเกิน 30 วินาทีโดยไม่มีการเปลี่ยนแปลง → ถือว่าออฟไลน์
-          if (now - lastUpdated > 30 * 1000) {
+          // ทำเครื่องหมายว่าเช็กครั้งแรกเสร็จแล้ว
+          firstCheckDone = true;
+
+          // ถ้าไม่มีการเปลี่ยนข้อมูลใน 30 วิ → ถือว่าออฟไลน์
+          if (now - lastUpdated > 30000) {
             showOffline();
             return;
           }
 
-          // แสดงผลเซนเซอร์ออนไลน์
+          // แสดงสถานะออนไลน์
           sensorIndicator.classList.remove("offline");
           sensorIndicator.classList.add("online");
           sensorLabel.textContent = "เซนเซอร์ออนไลน์";
 
+          // แสดงผลตรวจจับวัตถุ
           if (value === "1") {
             circle.classList.remove("green");
             circle.classList.add("red");
@@ -148,12 +158,13 @@
     }
 
     function checkSensorTimeout(now) {
-      if (now - lastUpdated > 30 * 1000) {
+      if (firstCheckDone && (now - lastUpdated > 30000)) {
         showOffline();
       }
     }
 
-    setInterval(updateStatus, 10000); // เช็กทุก 10 วินาที
+    // เริ่มการอัปเดตทุก 10 วินาที
+    setInterval(updateStatus, 10000);
     updateStatus();
   </script>
 </body>
