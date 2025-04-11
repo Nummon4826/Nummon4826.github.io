@@ -2,13 +2,13 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>ระบบตรวจจับวัตถุ</title>
+  <title>สถานะการตรวจจับวัตถุ</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #e8f0fe;
+      font-family: 'Arial', sans-serif;
+      background-color: #e9f0f4;
       text-align: center;
-      padding-top: 100px;
+      padding-top: 80px;
       margin: 0;
     }
 
@@ -16,167 +16,142 @@
       width: 150px;
       height: 150px;
       border-radius: 50%;
-      margin: 0 auto;
       background-color: gray;
+      margin: 0 auto;
       transition: background-color 0.5s;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
 
-    .green { background-color: green; }
-    .red { background-color: red; }
+    .green { background-color: #4CAF50; }
+    .red { background-color: #f44336; }
+    .gray { background-color: gray; }
 
     .label {
-      margin-top: 25px;
+      margin-top: 20px;
       font-size: 26px;
       font-weight: bold;
       color: #333;
     }
 
-    .sensor-status {
+    .sensor-status, .timestamp {
       position: fixed;
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 15px;
+      border-radius: 10px;
+    }
+
+    .sensor-status {
       bottom: 20px;
       left: 20px;
       display: flex;
       align-items: center;
-      font-size: 16px;
-      color: #333;
     }
 
     .sensor-circle {
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background-color: gray;
       margin-right: 10px;
       transition: background-color 0.5s;
     }
 
-    .online { background-color: dodgerblue; }
+    .online { background-color: #2196F3; }
     .offline { background-color: gray; }
 
     .timestamp {
-      position: fixed;
       bottom: 20px;
       right: 20px;
-      font-size: 16px;
       color: #555;
     }
   </style>
 </head>
 <body>
 
-  <div id="circle" class="status-circle"></div>
-  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
+  <div id="circle" class="status-circle gray"></div>
+  <div id="label" class="label">กำลังโหลด...</div>
 
+  <!-- สถานะเซนเซอร์ -->
   <div class="sensor-status">
     <div id="sensorIndicator" class="sensor-circle"></div>
-    <span id="sensorLabel">กำลังโหลดข้อมูล...</span>
+    <span id="sensorLabel">กำลังโหลด...</span>
   </div>
 
-  <div id="timestamp" class="timestamp">เวลา: --:--</div>
+  <!-- แสดงเวลา -->
+  <div id="timeDisplay" class="timestamp">เวลาล่าสุด: -</div>
 
   <script>
-    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+    const spreadsheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const sheetName = "Sheet1"; // ชื่อชีตใน Google Sheets
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!A1:B1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
-    const valueUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!B1?key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
-    const sensorUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!A1?key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    let previousValue = null;
 
-    let lastValue = null;
-    let lastChangeTime = Date.now();
-
-    function updateUI({ value, sensorStatus, timestamp, dataFound }) {
+    function updateUI(sensorValue, objectValue) {
       const circle = document.getElementById("circle");
       const label = document.getElementById("label");
-      const sensorIndicator = document.getElementById("sensorIndicator");
+      const sensorCircle = document.getElementById("sensorIndicator");
       const sensorLabel = document.getElementById("sensorLabel");
-      const timeLabel = document.getElementById("timestamp");
+      const timeDisplay = document.getElementById("timeDisplay");
 
-      // แสดงเวลาจากช่อง A1
-      timeLabel.textContent = "เวลา: " + (timestamp || "--:--");
+      // แสดงเวลา
+      timeDisplay.textContent = `เวลาล่าสุด: ${sensorValue || "-"}`;
 
-      // อัปเดตสถานะเซนเซอร์
-      if (sensorStatus) {
-        sensorIndicator.className = "sensor-circle online";
+      // สถานะเซนเซอร์
+      if (sensorValue && sensorValue.trim() !== "") {
+        sensorCircle.className = "sensor-circle online";
         sensorLabel.textContent = "เซนเซอร์ออนไลน์";
       } else {
-        sensorIndicator.className = "sensor-circle offline";
+        sensorCircle.className = "sensor-circle offline";
         sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
       }
 
-      // อัปเดตสถานะการตรวจจับ
-      if (!dataFound) {
-        circle.className = "status-circle";
+      // ตรวจสอบค่าการตรวจจับวัตถุ
+      const value = objectValue?.trim();
+
+      if (!value || isNaN(Number(value))) {
+        // ไม่พบข้อมูล
+        circle.className = "status-circle gray";
         label.textContent = "ไม่พบข้อมูล";
-        return;
-      }
-
-      if (value > 25) {
-        circle.className = "status-circle green";
-        label.textContent = "ไม่พบวัตถุ";
       } else {
-        circle.className = "status-circle red";
-        label.textContent = "ตรวจพบวัตถุ!";
-      }
-    }
+        const numberValue = parseFloat(value);
 
-    async function fetchData() {
-      try {
-        const [valueRes, sensorRes] = await Promise.all([
-          fetch(valueUrl).then(res => res.json()),
-          fetch(sensorUrl).then(res => res.json())
-        ]);
-
-        const valueRaw = valueRes?.values?.[0]?.[0] ?? "";
-        const sensorRaw = sensorRes?.values?.[0]?.[0] ?? "";
-
-        const currentValue = parseFloat(valueRaw);
-        const isNumber = !isNaN(currentValue);
-        const dataFound = isNumber;
-        const sensorOnline = sensorRaw.trim() !== "";
-
-        // ตรวจเช็คการเปลี่ยนแปลงของข้อมูล
-        if (isNumber && currentValue !== lastValue) {
-          lastValue = currentValue;
-          lastChangeTime = Date.now();
-          setTimeout(() => location.reload(), 100); // รีโหลดเมื่อมีการเปลี่ยน
-        }
-
-        // ถ้าไม่มีการเปลี่ยนแปลงเกิน 30 วินาที
-        const now = Date.now();
-        if (now - lastChangeTime > 30000) {
+        // รีเฟรชหากค่าต่างจากก่อนหน้า
+        if (previousValue !== null && numberValue !== previousValue) {
           location.reload();
         }
 
-        updateUI({
-          value: currentValue,
-          sensorStatus: sensorOnline,
-          timestamp: sensorRaw,
-          dataFound: dataFound
-        });
+        previousValue = numberValue;
 
-      } catch (err) {
-        console.error("เกิดข้อผิดพลาด:", err);
-        updateUI({
-          value: 0,
-          sensorStatus: false,
-          timestamp: "--:--",
-          dataFound: false
-        });
+        if (numberValue > 25) {
+          circle.className = "status-circle green";
+          label.textContent = "ไม่พบวัตถุ";
+        } else {
+          circle.className = "status-circle red";
+          label.textContent = "ตรวจพบวัตถุ!";
+        }
       }
     }
 
-    // เรียกตอนโหลดหน้า
-    updateUI({
-      value: 0,
-      sensorStatus: false,
-      timestamp: "--:--",
-      dataFound: false
-    });
+    function fetchData() {
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const values = data.values?.[0] || [];
+          const sensorValue = values[0] || "";
+          const objectValue = values[1] || "";
 
-    setTimeout(fetchData, 10000); // รอ 10 วินาที แรกกำลังโหลด
+          updateUI(sensorValue, objectValue);
+        })
+        .catch(err => {
+          console.error("เกิดข้อผิดพลาดในการดึงข้อมูล", err);
+          document.getElementById("label").textContent = "ไม่สามารถโหลดข้อมูล";
+        });
+    }
+
+    fetchData();
     setInterval(fetchData, 10000); // ตรวจข้อมูลทุก 10 วินาที
   </script>
+
 </body>
 </html>
