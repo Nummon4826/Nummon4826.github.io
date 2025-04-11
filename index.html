@@ -73,51 +73,48 @@
   <script>
     const token = "onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw";
     const vpin = "v1";
-    const url = `https://blynk.cloud/external/api/get?token=onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw&v1`;
+    const url = `https://blynk.cloud/external/api/get?token=${token}&${vpin}`;
 
     let lastUpdated = null;
     let isInitialLoading = true;
 
-    function showLoadingState() {
+    function setLoadingUI() {
       document.getElementById("circle").style.backgroundColor = "gray";
+      document.getElementById("circle").classList.remove("green", "red");
       document.getElementById("label").textContent = "กำลังโหลดข้อมูล...";
-      document.getElementById("sensorIndicator").classList.remove("online");
-      document.getElementById("sensorIndicator").classList.add("offline");
+      document.getElementById("sensorIndicator").className = "sensor-circle offline";
       document.getElementById("sensorLabel").textContent = "กำลังโหลดข้อมูล...";
     }
 
-    function showStatus({ online, value }) {
+    function setOfflineUI() {
+      document.getElementById("circle").style.backgroundColor = "gray";
+      document.getElementById("circle").classList.remove("green", "red");
+      document.getElementById("label").textContent = "เซนเซอร์ออฟไลน์";
+      document.getElementById("sensorIndicator").className = "sensor-circle offline";
+      document.getElementById("sensorLabel").textContent = "เซนเซอร์ออฟไลน์";
+    }
+
+    function setOnlineUI(value) {
       const circle = document.getElementById("circle");
       const label = document.getElementById("label");
       const sensorIndicator = document.getElementById("sensorIndicator");
       const sensorLabel = document.getElementById("sensorLabel");
 
-      if (!online) {
-        circle.classList.remove("green", "red");
-        circle.style.backgroundColor = "gray";
-        label.textContent = "เซนเซอร์ออฟไลน์";
-        sensorIndicator.classList.remove("online");
-        sensorIndicator.classList.add("offline");
-        sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
-        return;
-      }
-
-      sensorIndicator.classList.remove("offline");
-      sensorIndicator.classList.add("online");
+      sensorIndicator.className = "sensor-circle online";
       sensorLabel.textContent = "เซนเซอร์ออนไลน์";
 
       if (value === "1") {
         circle.classList.remove("green");
         circle.classList.add("red");
-        label.textContent = "พบวัตถุ!";
+        label.textContent = "ตรวจพบวัตถุ!";
       } else {
         circle.classList.remove("red");
         circle.classList.add("green");
-        label.textContent = "ไม่พบวัตถุ";
+        label.textContent = "ตรวจไม่พบวัตถุ";
       }
     }
 
-    function checkSensor() {
+    function fetchSensorData() {
       fetch(url)
         .then(res => res.ok ? res.text() : Promise.reject("Error"))
         .then(data => {
@@ -126,33 +123,39 @@
 
           if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
             if (!isInitialLoading && lastUpdated && now - lastUpdated >= 30000) {
-              showStatus({ online: false });
+              setOfflineUI();
             }
             return;
           }
 
           lastUpdated = now;
-          showStatus({ online: true, value });
+          setOnlineUI(value);
         })
         .catch(() => {
           if (!isInitialLoading && lastUpdated && Date.now() - lastUpdated >= 30000) {
-            showStatus({ online: false });
+            setOfflineUI();
           }
         });
     }
 
-    // แสดงสถานะกำลังโหลด 10 วินาทีแรก
-    showLoadingState();
+    // เริ่มด้วยสถานะกำลังโหลด 10 วินาที
+    setLoadingUI();
     setTimeout(() => {
       isInitialLoading = false;
-      if (!lastUpdated) {
-        showStatus({ online: false });
+      if (!lastUpdated || Date.now() - lastUpdated >= 30000) {
+        setOfflineUI();
       }
     }, 10000);
 
-    // เช็คข้อมูลทุก 10 วินาที
-    setInterval(checkSensor, 10000);
-    checkSensor();
+    // ตรวจสอบข้อมูลทุก 10 วินาที
+    setInterval(() => {
+      fetchSensorData();
+      if (!isInitialLoading && lastUpdated && Date.now() - lastUpdated >= 30000) {
+        setOfflineUI();
+      }
+    }, 10000);
+
+    fetchSensorData();
   </script>
 </body>
 </html>
