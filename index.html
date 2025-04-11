@@ -77,50 +77,63 @@
     const vpin = "v1";
     const url = `https://blynk.cloud/external/api/get?token=onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw&v1`;
 
-    function updateStatus() {
-      fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
-          return res.text();
-        })
-        .then(data => {
-          // อัปเดตสถานะเซนเซอร์เป็นออนไลน์
-          document.getElementById("sensorIndicator").classList.add("online");
-          document.getElementById("sensorIndicator").classList.remove("offline");
-          document.getElementById("sensorLabel").textContent = "เซนเซอร์ออนไลน์";
+      function updateStatus() {
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
+        return res.text();
+      })
+      .then(data => {
+        const value = data.trim();
 
-          const circle = document.getElementById("circle");
-          const label = document.getElementById("label");
+        const circle = document.getElementById("circle");
+        const label = document.getElementById("label");
+        const sensorIndicator = document.getElementById("sensorIndicator");
+        const sensorLabel = document.getElementById("sensorLabel");
 
-          if (data.trim() === "1") {
-            circle.classList.remove("green");
-            circle.classList.add("red");
-            label.textContent = "พบวัตถุ!";
-          } else {
-            circle.classList.remove("red");
-            circle.classList.add("green");
-            label.textContent = "ไม่พบวัตถุ";
-          }
-        })
-        .catch(err => {
-          console.error("Error fetching data:", err);
+        // ถ้าค่าได้กลับมาแต่เป็นว่าง/null หรือไม่ได้ค่าเซนเซอร์จริง
+        if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
+          // แสดงว่าเซนเซอร์ออฟไลน์
+          sensorIndicator.classList.remove("online");
+          sensorIndicator.classList.add("offline");
+          sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
 
-          // อัปเดตสถานะเซนเซอร์เป็นออฟไลน์
-          document.getElementById("sensorIndicator").classList.remove("online");
-          document.getElementById("sensorIndicator").classList.add("offline");
-          document.getElementById("sensorLabel").textContent = "เซนเซอร์ออฟไลน์";
-
-          // เปลี่ยนวงกลมสถานะหลักเป็นสีเทา
-          const circle = document.getElementById("circle");
           circle.classList.remove("green", "red");
           circle.style.backgroundColor = "gray";
-          document.getElementById("label").textContent = "ไม่สามารถโหลดข้อมูล";
-        });
-    }
+          label.textContent = "ไม่มีข้อมูลจากเซนเซอร์";
+          return;
+        }
 
-    setInterval(updateStatus, 60000); // ทุก 1 นาที
-    updateStatus(); // เรียกครั้งแรกตอนโหลดหน้าเว็บ
-  </script>
+        // ถ้าได้ค่าจริง แสดงว่าเซนเซอร์ออนไลน์
+        sensorIndicator.classList.remove("offline");
+        sensorIndicator.classList.add("online");
+        sensorLabel.textContent = "เซนเซอร์ออนไลน์";
 
-</body>
-</html>
+        if (value === "1") {
+          circle.classList.remove("green");
+          circle.classList.add("red");
+          label.textContent = "พบวัตถุ!";
+        } else {
+          circle.classList.remove("red");
+          circle.classList.add("green");
+          label.textContent = "ไม่พบวัตถุ";
+        }
+      })
+      .catch(err => {
+        console.error("Error:", err);
+
+        // ถ้า URL error เช่น server down หรือ token ผิด
+        document.getElementById("sensorIndicator").classList.remove("online");
+        document.getElementById("sensorIndicator").classList.add("offline");
+        document.getElementById("sensorLabel").textContent = "เซนเซอร์ออฟไลน์";
+
+        const circle = document.getElementById("circle");
+        circle.classList.remove("green", "red");
+        circle.style.backgroundColor = "gray";
+        document.getElementById("label").textContent = "ไม่สามารถโหลดข้อมูล";
+      });
+  }
+
+  setInterval(updateStatus, 60000); // ทุก 1 นาที
+  updateStatus(); // เรียกตอนเปิดหน้า
+</script>
