@@ -8,6 +8,7 @@
       font-family: Arial, sans-serif;
       text-align: center;
       padding-top: 100px;
+      background-color: #f0f0f0;
     }
 
     .status-circle {
@@ -31,6 +32,33 @@
       margin-top: 20px;
       font-size: 24px;
     }
+
+    /* Sensor online/offline indicator */
+    .sensor-status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+    }
+
+    .sensor-circle {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background-color: gray;
+      margin-right: 10px;
+      transition: background-color 0.5s;
+    }
+
+    .online {
+      background-color: blue;
+    }
+
+    .offline {
+      background-color: gray;
+    }
   </style>
 </head>
 <body>
@@ -38,15 +66,29 @@
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
+  <!-- Sensor status -->
+  <div class="sensor-status">
+    <div id="sensorIndicator" class="sensor-circle"></div>
+    <span id="sensorLabel">กำลังเชื่อมต่อเซนเซอร์...</span>
+  </div>
+
   <script>
-    const token = "YOUR_BLYNK_TOKEN"; // ใส่ token ของคุณที่นี่
-    const vpin = "v0"; // Virtual Pin ที่ส่งค่าจาก Arduino
+    const token = "YOUR_BLYNK_TOKEN"; // ใส่ Token ที่นี่
+    const vpin = "v0";
     const url = `https://blynk.cloud/external/api/get?token=${token}&${vpin}`;
 
     function updateStatus() {
       fetch(url)
-        .then(res => res.text())
+        .then(res => {
+          if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
+          return res.text();
+        })
         .then(data => {
+          // อัปเดตสถานะเซนเซอร์เป็นออนไลน์
+          document.getElementById("sensorIndicator").classList.add("online");
+          document.getElementById("sensorIndicator").classList.remove("offline");
+          document.getElementById("sensorLabel").textContent = "เซนเซอร์ออนไลน์";
+
           const circle = document.getElementById("circle");
           const label = document.getElementById("label");
 
@@ -62,12 +104,22 @@
         })
         .catch(err => {
           console.error("Error fetching data:", err);
-          document.getElementById("label").textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+
+          // อัปเดตสถานะเซนเซอร์เป็นออฟไลน์
+          document.getElementById("sensorIndicator").classList.remove("online");
+          document.getElementById("sensorIndicator").classList.add("offline");
+          document.getElementById("sensorLabel").textContent = "เซนเซอร์ออฟไลน์";
+
+          // เปลี่ยนวงกลมสถานะหลักเป็นสีเทา
+          const circle = document.getElementById("circle");
+          circle.classList.remove("green", "red");
+          circle.style.backgroundColor = "gray";
+          document.getElementById("label").textContent = "ไม่สามารถโหลดข้อมูล";
         });
     }
 
-    setInterval(updateStatus, 60000); // ตรวจสอบทุก 60 วินาที
-    updateStatus(); // เรียกตอนโหลดหน้าเว็บครั้งแรก
+    setInterval(updateStatus, 60000); // ทุก 1 นาที
+    updateStatus(); // เรียกครั้งแรกตอนโหลดหน้าเว็บ
   </script>
 
 </body>
