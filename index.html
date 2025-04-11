@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Object Detection Status</title>
+  <title>สถานะการตรวจจับวัตถุ</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,8 +12,8 @@
     }
 
     .status-circle {
-      width: 100px;
-      height: 100px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
       margin: 0 auto;
       background-color: gray;
@@ -29,34 +29,9 @@
     }
 
     .label {
-      margin-top: 20px;
-      font-size: 24px;
-    }
-
-    .sensor-status {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      display: flex;
-      align-items: center;
-      font-size: 16px;
-    }
-
-    .sensor-circle {
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      background-color: gray;
-      margin-right: 10px;
-      transition: background-color 0.5s;
-    }
-
-    .online {
-      background-color: blue;
-    }
-
-    .offline {
-      background-color: gray;
+      margin-top: 30px;
+      font-size: 26px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -65,96 +40,90 @@
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
-  <div class="sensor-status">
-    <div id="sensorIndicator" class="sensor-circle"></div>
-    <span id="sensorLabel">กำลังเชื่อมต่อเซนเซอร์...</span>
-  </div>
-
   <script>
-    const token = "onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw";
-    const vpin = "v1";
-    const url = `https://blynk.cloud/external/api/get?token=onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw&v1`;
+    const spreadsheetId = "YOUR_SPREADSHEET_ID"; // <-- แทนที่ด้วยของคุณ
+    const sheetName = "Sheet1"; // <-- แทนชื่อชีทของคุณ
+    const apiKey = "YOUR_API_KEY"; // <-- แทนที่ด้วย API Key
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?alt=json&key=${apiKey}`;
 
-    let lastValue = null;
-    let lastUpdated = 0;
+    let lastDataTimestamp = null;
+    let isLoading = true;
 
-    function updateStatus() {
+    function setLoadingUI() {
+      document.getElementById("circle").className = "status-circle";
+      document.getElementById("label").textContent = "กำลังโหลดข้อมูล...";
+    }
+
+    function setNoSensorUI() {
+      document.getElementById("circle").className = "status-circle";
+      document.getElementById("label").textContent = "ไม่พบเซนเซอร์";
+    }
+
+    function setDetectedUI() {
+      const circle = document.getElementById("circle");
+      circle.className = "status-circle red";
+      document.getElementById("label").textContent = "ตรวจพบวัตถุ!";
+    }
+
+    function setNotDetectedUI() {
+      const circle = document.getElementById("circle");
+      circle.className = "status-circle green";
+      document.getElementById("label").textContent = "ไม่พบวัตถุ";
+    }
+
+    function fetchSensorData() {
       fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
-          return res.text();
-        })
+        .then(response => response.json())
         .then(data => {
-          const value = data.trim();
-          const now = Date.now();
-
-          const circle = document.getElementById("circle");
-          const label = document.getElementById("label");
-          const sensorIndicator = document.getElementById("sensorIndicator");
-          const sensorLabel = document.getElementById("sensorLabel");
-
-          // ถ้าค่าที่ได้ไม่ valid
-          if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
-            checkSensorTimeout(now);
+          const rows = data.values;
+          if (!rows || rows.length < 2) {
+            setNoSensorUI();
             return;
           }
 
-          // ถ้าค่าเปลี่ยนจากรอบก่อนหน้า → เซนเซอร์ทำงาน
-          if (value !== lastValue) {
-            lastValue = value;
-            lastUpdated = now;
-          }
-
-          // ถ้าเกิน 30 วินาทีโดยไม่มีการเปลี่ยนแปลง → ถือว่าออฟไลน์
-          if (now - lastUpdated > 30 * 1000) {
-            showOffline();
-            return;
-          }
-
-          // แสดงผลเซนเซอร์ออนไลน์
-          sensorIndicator.classList.remove("offline");
-          sensorIndicator.classList.add("online");
-          sensorLabel.textContent = "เซนเซอร์ออนไลน์";
+          // ดึงค่าล่าสุดจากแถวล่างสุด
+          const lastRow = rows[rows.length - 1];
+          const value = lastRow[0];
+          const timestamp = new Date();
 
           if (value === "1") {
-            circle.classList.remove("green");
-            circle.classList.add("red");
-            label.textContent = "พบวัตถุ!";
+            setDetectedUI();
+          } else if (value === "0") {
+            setNotDetectedUI();
           } else {
-            circle.classList.remove("red");
-            circle.classList.add("green");
-            label.textContent = "ไม่พบวัตถุ";
+            setNoSensorUI();
+            return;
           }
+
+          lastDataTimestamp = timestamp;
         })
-        .catch(err => {
-          console.error("Error:", err);
-          showOffline();
+        .catch(error => {
+          console.error("Fetch error:", error);
+          setNoSensorUI();
         });
     }
 
-    function showOffline() {
-      const circle = document.getElementById("circle");
-      const label = document.getElementById("label");
-      const sensorIndicator = document.getElementById("sensorIndicator");
-      const sensorLabel = document.getElementById("sensorLabel");
-
-      sensorIndicator.classList.remove("online");
-      sensorIndicator.classList.add("offline");
-      sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
-
-      circle.classList.remove("green", "red");
-      circle.style.backgroundColor = "gray";
-      label.textContent = "เซนเซอร์ออฟไลน์";
-    }
-
-    function checkSensorTimeout(now) {
-      if (now - lastUpdated > 30 * 1000) {
-        showOffline();
+    function checkSensorTimeout() {
+      const now = new Date();
+      if (!lastDataTimestamp || now - lastDataTimestamp > 30000) {
+        setNoSensorUI();
       }
     }
 
-    setInterval(updateStatus, 10000); // เช็กทุก 10 วินาที
-    updateStatus();
+    // เริ่มด้วยสถานะ "กำลังโหลด" 10 วินาที
+    setLoadingUI();
+    setTimeout(() => {
+      isLoading = false;
+      fetchSensorData();
+    }, 10000);
+
+    // ตรวจสอบข้อมูลทุก 10 วินาที
+    setInterval(() => {
+      if (!isLoading) {
+        fetchSensorData();
+        checkSensorTimeout();
+      }
+    }, 10000);
   </script>
 </body>
 </html>
