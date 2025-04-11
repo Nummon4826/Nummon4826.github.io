@@ -71,101 +71,81 @@
   </div>
 
   <script>
-    const token = "onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw";
+    const token = "onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw"; // เปลี่ยน token ได้ที่นี่
     const vpin = "v1";
-    const url = `https://blynk.cloud/external/api/get?token=onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw&v1`;
+    const url = `https://blynk.cloud/external/api/get?token=${token}&${vpin}`;
 
-    let lastValue = null;
-    let lastUpdated = 0;
-    let firstCheckDone = false;
+    let lastUpdated = null;
+    let isInitialLoading = true;
 
-    function updateStatus() {
-      fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลได้");
-          return res.text();
-        })
-        .then(data => {
-          const value = data.trim();
-          const now = Date.now();
-
-          const circle = document.getElementById("circle");
-          const label = document.getElementById("label");
-          const sensorIndicator = document.getElementById("sensorIndicator");
-          const sensorLabel = document.getElementById("sensorLabel");
-
-          // ถ้าค่าไม่ valid
-          if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
-            if (!firstCheckDone) {
-              // ยังอยู่ในการเช็กครั้งแรก
-              label.textContent = "ไม่มีข้อมูลจากเซนเซอร์ (กำลังตรวจสอบ...)";
-              sensorLabel.textContent = "กำลังตรวจสอบเซนเซอร์...";
-            }
-            checkSensorTimeout(now);
-            return;
-          }
-
-          // ถ้ามีข้อมูลใหม่ → อัปเดตเวลาและแสดงว่าเซนเซอร์ออนไลน์
-          if (value !== lastValue) {
-            lastValue = value;
-            lastUpdated = now;
-          }
-
-          // ทำเครื่องหมายว่าเช็กครั้งแรกเสร็จแล้ว
-          firstCheckDone = true;
-
-          // ถ้าไม่มีการเปลี่ยนข้อมูลใน 30 วิ → ถือว่าออฟไลน์
-          if (now - lastUpdated > 30000) {
-            showOffline();
-            return;
-          }
-
-          // แสดงสถานะออนไลน์
-          sensorIndicator.classList.remove("offline");
-          sensorIndicator.classList.add("online");
-          sensorLabel.textContent = "เซนเซอร์ออนไลน์";
-
-          // แสดงผลตรวจจับวัตถุ
-          if (value === "1") {
-            circle.classList.remove("green");
-            circle.classList.add("red");
-            label.textContent = "พบวัตถุ!";
-          } else {
-            circle.classList.remove("red");
-            circle.classList.add("green");
-            label.textContent = "ไม่พบวัตถุ";
-          }
-        })
-        .catch(err => {
-          console.error("Error:", err);
-          showOffline();
-        });
-    }
-
-    function showOffline() {
+    function showStatus({ online, value }) {
       const circle = document.getElementById("circle");
       const label = document.getElementById("label");
       const sensorIndicator = document.getElementById("sensorIndicator");
       const sensorLabel = document.getElementById("sensorLabel");
 
-      sensorIndicator.classList.remove("online");
-      sensorIndicator.classList.add("offline");
-      sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
+      if (!online) {
+        circle.classList.remove("green", "red");
+        circle.style.backgroundColor = "gray";
+        label.textContent = "เซนเซอร์ออฟไลน์";
+        sensorIndicator.classList.remove("online");
+        sensorIndicator.classList.add("offline");
+        sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
+        return;
+      }
 
-      circle.classList.remove("green", "red");
-      circle.style.backgroundColor = "gray";
-      label.textContent = "เซนเซอร์ออฟไลน์";
-    }
+      sensorIndicator.classList.remove("offline");
+      sensorIndicator.classList.add("online");
+      sensorLabel.textContent = "เซนเซอร์ออนไลน์";
 
-    function checkSensorTimeout(now) {
-      if (firstCheckDone && (now - lastUpdated > 30000)) {
-        showOffline();
+      if (value === "1") {
+        circle.classList.remove("green");
+        circle.classList.add("red");
+        label.textContent = "พบวัตถุ!";
+      } else {
+        circle.classList.remove("red");
+        circle.classList.add("green");
+        label.textContent = "ไม่พบวัตถุ";
       }
     }
 
-    // เริ่มการอัปเดตทุก 10 วินาที
-    setInterval(updateStatus, 10000);
-    updateStatus();
+    function checkSensor() {
+      fetch(url)
+        .then(res => res.ok ? res.text() : Promise.reject("Error"))
+        .then(data => {
+          const value = data.trim();
+          const now = Date.now();
+
+          if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
+            if (isInitialLoading) return;
+            if (lastUpdated && now - lastUpdated >= 30000) {
+              showStatus({ online: false });
+            }
+            return;
+          }
+
+          lastUpdated = now;
+          showStatus({ online: true, value });
+        })
+        .catch(() => {
+          if (isInitialLoading) return;
+          if (lastUpdated && Date.now() - lastUpdated >= 30000) {
+            showStatus({ online: false });
+          }
+        });
+    }
+
+    // โหลดครั้งแรก: เช็คข้อมูลภายใน 10 วิ
+    setTimeout(() => {
+      isInitialLoading = false;
+      if (!lastUpdated) {
+        showStatus({ online: false });
+      }
+    }, 10000);
+
+    // เรียกเช็คข้อมูลทุก 10 วิ
+    setInterval(checkSensor, 10000);
+    checkSensor();
   </script>
 </body>
 </html>
