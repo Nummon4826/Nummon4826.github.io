@@ -22,79 +22,54 @@
 
     .green { background-color: green; }
     .red { background-color: red; }
+    .gray { background-color: gray; }
 
     .label {
       margin-top: 20px;
       font-size: 28px;
       font-weight: bold;
     }
-
-    .sensor-status {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      display: flex;
-      align-items: center;
-      font-size: 18px;
-    }
-
-    .sensor-circle {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background-color: gray;
-      margin-right: 10px;
-      transition: background-color 0.5s;
-    }
-
-    .online { background-color: blue; }
-    .offline { background-color: gray; }
   </style>
 </head>
 <body>
 
-  <div id="circle" class="status-circle"></div>
+  <div id="circle" class="status-circle gray"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
-
-  <div class="sensor-status">
-    <div id="sensorIndicator" class="sensor-circle"></div>
-    <span id="sensorLabel">กำลังโหลดข้อมูล...</span>
-  </div>
 
   <script>
     const spreadsheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const sheetName = "Sheet1"; // แก้ชื่อชีทหากไม่ใช่ Sheet1
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!A3?key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    const sheetName = "Sheet1"; // ปรับถ้าใช้ชื่อชีทอื่น
+    const cell = "B1";
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!B3?key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
-    let lastUpdated = null;
-    let isInitialLoading = true;
+    let lastValue = null;
 
-    function setUI({ objectDetected, sensorOnline, loading }) {
+    function updateUI(value) {
       const circle = document.getElementById("circle");
       const label = document.getElementById("label");
-      const sensorCircle = document.getElementById("sensorIndicator");
-      const sensorLabel = document.getElementById("sensorLabel");
 
-      // เซนเซอร์สถานะ
-      sensorCircle.className = "sensor-circle " + (sensorOnline ? "online" : "offline");
-      sensorLabel.textContent = loading ? "กำลังโหลดข้อมูล..." : (sensorOnline ? "เซนเซอร์ออนไลน์" : "เซนเซอร์ออฟไลน์");
+      const numericValue = parseFloat(value);
+      const isValidNumber = !isNaN(numericValue);
 
-      // สถานะการตรวจจับ
-      if (loading) {
-        circle.style.backgroundColor = "gray";
-        label.textContent = "กำลังโหลดข้อมูล...";
-      } else if (!sensorOnline) {
-        circle.style.backgroundColor = "gray";
-        label.textContent = "ไม่พบเซนเซอร์";
+      if (!isValidNumber) {
+        circle.className = "status-circle gray";
+        label.textContent = "ไม่พบข้อมูล";
+        return;
+      }
+
+      if (lastValue !== null && lastValue !== numericValue) {
+        location.reload(); // รีเฟรชถ้าข้อมูลเปลี่ยน
+      }
+
+      lastValue = numericValue;
+
+      if (numericValue > 25) {
+        circle.className = "status-circle green";
+        label.textContent = "ไม่พบวัตถุ";
       } else {
-        if (objectDetected) {
-          circle.className = "status-circle red";
-          label.textContent = "ตรวจพบวัตถุ!";
-        } else {
-          circle.className = "status-circle green";
-          label.textContent = "ไม่พบวัตถุ";
-        }
+        circle.className = "status-circle red";
+        label.textContent = "ตรวจพบวัตถุ";
       }
     }
 
@@ -102,51 +77,20 @@
       fetch(url)
         .then(res => res.json())
         .then(data => {
-          const value = data.values?.[0]?.[0]?.trim();
-          const now = Date.now();
-
-          if (value && !isNaN(value)) {
-            lastUpdated = now;
-            setUI({
-              objectDetected: value === "1",
-              sensorOnline: true,
-              loading: false
-            });
-          } else {
-            checkOffline();
-          }
+          const value = data?.values?.[0]?.[0]?.trim() || "";
+          updateUI(value);
         })
         .catch(() => {
-          checkOffline();
+          document.getElementById("circle").className = "status-circle gray";
+          document.getElementById("label").textContent = "ไม่พบข้อมูล";
         });
     }
 
-    function checkOffline() {
-      const now = Date.now();
-      const timeDiff = now - (lastUpdated || 0);
-      const offline = timeDiff >= 30000;
+    // เรียกตอนเริ่ม
+    fetchData();
 
-      setUI({
-        objectDetected: false,
-        sensorOnline: !offline,
-        loading: false
-      });
-    }
-
-    // แสดงสถานะ "กำลังโหลด" 10 วินาทีแรก
-    setUI({ objectDetected: false, sensorOnline: false, loading: true });
-    setTimeout(() => {
-      isInitialLoading = false;
-      fetchData();
-    }, 10000);
-
-    // ดึงข้อมูลทุก 10 วินาที
-    setInterval(() => {
-      if (!isInitialLoading) fetchData();
-    }, 10000);
-
-    // รีเฟรชหน้าเว็บทุก 10 วินาที (ถ้าต้องการรีเซต DOM/JS)
-    setTimeout(() => location.reload(), 20000);
+    // ตรวจทุก 10 วินาที
+    setInterval(fetchData, 10000);
   </script>
 
 </body>
