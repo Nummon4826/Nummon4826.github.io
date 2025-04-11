@@ -71,12 +71,20 @@
   </div>
 
   <script>
-    const token = "onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw"; // เปลี่ยน token ได้ที่นี่
+    const token = "onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw";
     const vpin = "v1";
     const url = `https://blynk.cloud/external/api/get?token=onrE0Sv_1QbSbj6NxZM_ciq9-k4NLCPw&v1`;
 
     let lastUpdated = null;
     let isInitialLoading = true;
+
+    function showLoadingState() {
+      document.getElementById("circle").style.backgroundColor = "gray";
+      document.getElementById("label").textContent = "กำลังโหลดข้อมูล...";
+      document.getElementById("sensorIndicator").classList.remove("online");
+      document.getElementById("sensorIndicator").classList.add("offline");
+      document.getElementById("sensorLabel").textContent = "กำลังโหลดข้อมูล...";
+    }
 
     function showStatus({ online, value }) {
       const circle = document.getElementById("circle");
@@ -117,8 +125,7 @@
           const now = Date.now();
 
           if (value === "" || value === "null" || value === "nan" || isNaN(Number(value))) {
-            if (isInitialLoading) return;
-            if (lastUpdated && now - lastUpdated >= 30000) {
+            if (!isInitialLoading && lastUpdated && now - lastUpdated >= 30000) {
               showStatus({ online: false });
             }
             return;
@@ -128,14 +135,14 @@
           showStatus({ online: true, value });
         })
         .catch(() => {
-          if (isInitialLoading) return;
-          if (lastUpdated && Date.now() - lastUpdated >= 30000) {
+          if (!isInitialLoading && lastUpdated && Date.now() - lastUpdated >= 30000) {
             showStatus({ online: false });
           }
         });
     }
 
-    // โหลดครั้งแรก: เช็คข้อมูลภายใน 10 วิ
+    // แสดงสถานะกำลังโหลด 10 วินาทีแรก
+    showLoadingState();
     setTimeout(() => {
       isInitialLoading = false;
       if (!lastUpdated) {
@@ -143,7 +150,7 @@
       }
     }, 10000);
 
-    // เรียกเช็คข้อมูลทุก 10 วิ
+    // เช็คข้อมูลทุก 10 วินาที
     setInterval(checkSensor, 10000);
     checkSensor();
   </script>
