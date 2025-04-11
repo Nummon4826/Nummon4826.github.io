@@ -34,63 +34,91 @@
 <body>
 
   <div id="circle" class="status-circle gray"></div>
-  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
+  <div id="label" class="label">กำลังโหลด...</div>
 
   <script>
     const spreadsheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const sheetName = "Sheet1"; // ปรับถ้าใช้ชื่อชีทอื่น
-    const cell = "B1";
+    const sheetName = "Sheet1"; // เปลี่ยนชื่อชีทถ้าจำเป็น
     const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!B1?key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
     let lastValue = null;
+    let lastUpdateTime = Date.now();
 
-    function updateUI(value) {
+    function updateUI(state, value = null) {
       const circle = document.getElementById("circle");
       const label = document.getElementById("label");
 
-      const numericValue = parseFloat(value);
-      const isValidNumber = !isNaN(numericValue);
-
-      if (!isValidNumber) {
+      if (state === "loading") {
+        circle.className = "status-circle gray";
+        label.textContent = "กำลังโหลด...";
+      } else if (state === "no_data") {
         circle.className = "status-circle gray";
         label.textContent = "ไม่พบข้อมูล";
-        return;
-      }
-
-      if (lastValue !== null && lastValue !== numericValue) {
-        location.reload(); // รีเฟรชถ้าข้อมูลเปลี่ยน
-      }
-
-      lastValue = numericValue;
-
-      if (numericValue > 25) {
-        circle.className = "status-circle green";
-        label.textContent = "ไม่พบวัตถุ";
-      } else {
+      } else if (state === "detected") {
         circle.className = "status-circle red";
         label.textContent = "ตรวจพบวัตถุ";
+      } else if (state === "not_detected") {
+        circle.className = "status-circle green";
+        label.textContent = "ไม่พบวัตถุ";
       }
+    }
+
+    function isNumeric(val) {
+      return !isNaN(val) && !isNaN(parseFloat(val));
     }
 
     function fetchData() {
       fetch(url)
         .then(res => res.json())
         .then(data => {
-          const value = data?.values?.[0]?.[0]?.trim() || "";
-          updateUI(value);
+          const value = data.values?.[0]?.[0]?.trim();
+
+          const now = Date.now();
+          if (isNumeric(value)) {
+            const num = parseFloat(value);
+
+            if (lastValue !== null && num !== lastValue) {
+              location.reload(); // รีเฟรชเมื่อมีการเปลี่ยนแปลงของข้อมูล
+            }
+
+            lastValue = num;
+            lastUpdateTime = now;
+
+            if (num > 25) {
+              updateUI("not_detected", num);
+            } else {
+              updateUI("detected", num);
+            }
+
+          } else {
+            updateUI("no_data");
+          }
         })
-        .catch(() => {
-          document.getElementById("circle").className = "status-circle gray";
-          document.getElementById("label").textContent = "ไม่พบข้อมูล";
+        .catch(err => {
+          console.error("Error:", err);
+          updateUI("no_data");
         });
     }
 
-    // เรียกตอนเริ่ม
-    fetchData();
+    // เริ่มด้วยสถานะกำลังโหลด
+    updateUI("loading");
 
-    // ตรวจทุก 10 วินาที
-    setInterval(fetchData, 10000);
+    // ตรวจข้อมูลทุก 10 วินาที
+    setInterval(() => {
+      fetchData();
+    }, 10000);
+
+    // ตรวจว่าไม่มีการเปลี่ยนแปลงเลย 30 วินาทีหรือไม่
+    setInterval(() => {
+      const now = Date.now();
+      if (now - lastUpdateTime >= 30000) {
+        location.reload(); // รีเฟรชถ้าไม่มีการเปลี่ยนแปลง
+      }
+    }, 5000); // ตรวจทุก 5 วินาที
+
+    // เรียกครั้งแรกหลัง 2 วินาที (หลังแสดงสถานะกำลังโหลด)
+    setTimeout(fetchData, 2000);
   </script>
 
 </body>
