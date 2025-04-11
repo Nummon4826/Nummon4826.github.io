@@ -62,10 +62,10 @@
   </div>
 
   <script>
-    const spreadsheetId = "ใส่_SPREADSHEET_ID_ของคุณ";
-    const apiKey = "ใส่_API_KEY_ของคุณ";
+    const spreadsheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
     const sheetName = "Sheet1"; // แก้ชื่อชีทหากไม่ใช่ Sheet1
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}!A3?alt=json&key=${apiKey}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!A3?key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
     let lastUpdated = null;
     let isInitialLoading = true;
@@ -146,7 +146,7 @@
     }, 10000);
 
     // รีเฟรชหน้าเว็บทุก 10 วินาที (ถ้าต้องการรีเซต DOM/JS)
-    setTimeout(() => location.reload(), 10000);
+    setTimeout(() => location.reload(), 20000);
   </script>
 
 </body>
