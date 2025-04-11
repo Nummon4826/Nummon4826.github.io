@@ -1,82 +1,74 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตัวอย่าง UI</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        label {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 8px;
-            display: block;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Object Detection Status</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+
+    .status-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto;
+      background-color: gray;
+      transition: background-color 0.5s;
+    }
+
+    .green {
+      background-color: green;
+    }
+
+    .red {
+      background-color: red;
+    }
+
+    .label {
+      margin-top: 20px;
+      font-size: 24px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>สมัครสมาชิก</h2>
-        <form action="#">
-            <label for="name">ชื่อ</label>
-            <input type="text" id="name" name="name" placeholder="กรุณากรอกชื่อ" required>
-            
-            <label for="email">อีเมล</label>
-            <input type="email" id="email" name="email" placeholder="กรุณากรอกอีเมล" required>
-            
-            <label for="password">รหัสผ่าน</label>
-            <input type="password" id="password" name="password" placeholder="กรุณากรอกรหัสผ่าน" required>
-            
-            <label for="message">ข้อความ</label>
-            <textarea id="message" name="message" rows="4" placeholder="กรอกข้อความของคุณ"></textarea>
-            
-            <button type="submit">สมัคร</button>
-        </form>
-    </div>
+  <div id="circle" class="status-circle"></div>
+  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
+
+  <script>
+    const token = "YOUR_BLYNK_TOKEN"; // ใส่ token ของคุณที่นี่
+    const vpin = "v0"; // Virtual Pin ที่ส่งค่าจาก Arduino
+    const url = `https://blynk.cloud/external/api/get?token=${token}&${vpin}`;
+
+    function updateStatus() {
+      fetch(url)
+        .then(res => res.text())
+        .then(data => {
+          const circle = document.getElementById("circle");
+          const label = document.getElementById("label");
+
+          if (data.trim() === "1") {
+            circle.classList.remove("green");
+            circle.classList.add("red");
+            label.textContent = "พบวัตถุ!";
+          } else {
+            circle.classList.remove("red");
+            circle.classList.add("green");
+            label.textContent = "ไม่พบวัตถุ";
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching data:", err);
+          document.getElementById("label").textContent = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+        });
+    }
+
+    setInterval(updateStatus, 60000); // ตรวจสอบทุก 60 วินาที
+    updateStatus(); // เรียกตอนโหลดหน้าเว็บครั้งแรก
+  </script>
 
 </body>
 </html>
