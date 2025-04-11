@@ -7,25 +7,36 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding-top: 80px;
+      padding-top: 100px;
       background-color: #f0f0f0;
     }
 
     .status-circle {
-      width: 120px;
-      height: 120px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
       margin: 0 auto;
       background-color: gray;
       transition: background-color 0.5s;
     }
 
-    .green { background-color: green; }
-    .red { background-color: red; }
+    .green {
+      background-color: green;
+    }
+
+    .red {
+      background-color: red;
+    }
 
     .label {
       margin-top: 20px;
       font-size: 24px;
+    }
+
+    .message {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
     }
 
     .sensor-status {
@@ -46,13 +57,12 @@
       transition: background-color 0.5s;
     }
 
-    .online { background-color: blue; }
-    .offline { background-color: gray; }
+    .online {
+      background-color: blue;
+    }
 
-    .message-box {
-      margin-top: 30px;
-      font-size: 18px;
-      color: #333;
+    .offline {
+      background-color: gray;
     }
   </style>
 </head>
@@ -60,33 +70,36 @@
 
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
-  <div class="message-box" id="message">กำลังโหลดข้อความ...</div>
+  <div id="message" class="message">กำลังโหลดข้อความ...</div>
 
   <div class="sensor-status">
     <div id="sensorIndicator" class="sensor-circle"></div>
-    <span id="sensorLabel">กำลังโหลดข้อมูล...</span>
+    <span id="sensorLabel">กำลังโหลด...</span>
   </div>
 
   <script>
-    const spreadsheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4"; // ใส่ Spreadsheet ID
-    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0"; // ใส่ Google API Key
-    const valueUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!B3?alt=json&key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
-    const messageUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!A3?alt=json&key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    const spreadsheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+    const apiKey = " AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+    const sheetName = "Test"; // หรือชื่อชีทที่คุณใช้
+    const statusUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Test!B3?alt=json&key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    const messageUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Test!A3?alt=json&key= AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
     let lastUpdated = null;
     let isInitialLoading = true;
 
     function setLoadingUI() {
       document.getElementById("circle").style.backgroundColor = "gray";
+      document.getElementById("circle").classList.remove("green", "red");
       document.getElementById("label").textContent = "กำลังโหลดข้อมูล...";
       document.getElementById("sensorIndicator").className = "sensor-circle offline";
-      document.getElementById("sensorLabel").textContent = "กำลังโหลดข้อมูล...";
+      document.getElementById("sensorLabel").textContent = "กำลังโหลด...";
       document.getElementById("message").textContent = "กำลังโหลดข้อความ...";
     }
 
     function setOfflineUI() {
-      document.getElementById("circle").style.backgroundColor = "gray";
-      document.getElementById("circle").classList.remove("green", "red");
+      const circle = document.getElementById("circle");
+      circle.classList.remove("green", "red");
+      circle.style.backgroundColor = "gray";
       document.getElementById("label").textContent = "ไม่พบเซนเซอร์";
       document.getElementById("sensorIndicator").className = "sensor-circle offline";
       document.getElementById("sensorLabel").textContent = "เซนเซอร์ออฟไลน์";
@@ -112,26 +125,26 @@
       }
     }
 
-    function updateMessageBox() {
+    function updateMessage() {
       fetch(messageUrl)
-        .then(res => res.ok ? res.json() : Promise.reject("error"))
+        .then(res => res.json())
         .then(data => {
-          const text = data.values?.[0]?.[0] || "";
-          document.getElementById("message").textContent = text !== "" ? text : "ไม่มีข้อความแสดงในขณะนี้";
+          const msg = data.values?.[0]?.[0]?.trim();
+          document.getElementById("message").textContent = msg || "ไม่มีข้อความแสดงในขณะนี้";
         })
         .catch(() => {
           document.getElementById("message").textContent = "ไม่มีข้อความแสดงในขณะนี้";
         });
     }
 
-    function fetchSensorData() {
-      fetch(valueUrl)
-        .then(res => res.ok ? res.json() : Promise.reject("error"))
+    function fetchSensorStatus() {
+      fetch(statusUrl)
+        .then(res => res.json())
         .then(data => {
-          const value = data.values?.[0]?.[0];
+          const value = data.values?.[0]?.[0]?.trim();
           const now = Date.now();
 
-          if (value === undefined || value === "" || isNaN(Number(value))) {
+          if (!value || isNaN(Number(value))) {
             if (!isInitialLoading && lastUpdated && now - lastUpdated >= 30000) {
               setOfflineUI();
             }
@@ -148,7 +161,7 @@
         });
     }
 
-    // เริ่มต้นโหลด
+    // เริ่มโหลด 10 วิ
     setLoadingUI();
     setTimeout(() => {
       isInitialLoading = false;
@@ -157,18 +170,17 @@
       }
     }, 10000);
 
-    // ตรวจทุก 10 วินาที
+    // วนเช็คทุก 10 วิ
     setInterval(() => {
-      fetchSensorData();
-      updateMessageBox();
+      fetchSensorStatus();
+      updateMessage();
       if (!isInitialLoading && lastUpdated && Date.now() - lastUpdated >= 30000) {
         setOfflineUI();
       }
     }, 10000);
 
-    // เรียกครั้งแรก
-    fetchSensorData();
-    updateMessageBox();
+    fetchSensorStatus();
+    updateMessage();
   </script>
 </body>
 </html>
