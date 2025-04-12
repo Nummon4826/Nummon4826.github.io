@@ -6,139 +6,92 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #e8f0fe;
-      text-align: center;
-      padding-top: 100px;
+      background-color: #f4f6f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
 
     .status-circle {
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
       background-color: gray;
-      margin: 0 auto;
       transition: background-color 0.5s;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     .green { background-color: #4CAF50; }
     .red { background-color: #f44336; }
+    .gray { background-color: gray; }
 
     .label {
+      margin-top: 25px;
       font-size: 24px;
-      margin-top: 20px;
       color: #333;
-    }
-
-    .sensor-status {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      display: flex;
-      align-items: center;
-      font-size: 16px;
-    }
-
-    .sensor-circle {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background-color: gray;
-      margin-right: 8px;
-      transition: background-color 0.5s;
-    }
-
-    .online { background-color: #2196F3; }
-    .offline { background-color: gray; }
-
-    .time-label {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      font-size: 14px;
-      color: #555;
     }
   </style>
 </head>
 <body>
 
-  <div id="circle" class="status-circle"></div>
-  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
-
-  <div class="sensor-status">
-    <div id="sensorIndicator" class="sensor-circle offline"></div>
-    <span id="sensorLabel">กำลังโหลด...</span>
-  </div>
-
-  <div id="timeLabel" class="time-label">เวลา: -</div>
+  <div id="circle" class="status-circle gray"></div>
+  <div id="label" class="label">กำลังโหลด...</div>
 
   <script>
-    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj40";
+    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const sheetName = "Test"; // ปรับให้ตรงกับชื่อชีตของคุณ
-
-    const circle = document.getElementById("circle");
-    const label = document.getElementById("label");
-    const sensorIndicator = document.getElementById("sensorIndicator");
-    const sensorLabel = document.getElementById("sensorLabel");
-    const timeLabel = document.getElementById("timeLabel");
+    const sheetName = "Sheet1"; // เช่น Sheet1
+    const cellRange = "D5";
 
     let lastValue = null;
 
-    function updateStatus() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj40/values=Test!C4:D5?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    function checkSensorData() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values=Sheet1!D5?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
       fetch(url)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error("URL ผิดพลาดหรือการเข้าถึงล้มเหลว");
+          return res.json();
+        })
         .then(data => {
-          const rows = data.values || [];
-          const timeData = rows[0]?.[0] || "";
-          const sensorData = rows[1]?.[1] || "";
+          const rawValue = data.values?.[0]?.[0];
+          const value = parseFloat(rawValue);
 
-          // แสดงเวลาล่าสุด
-          timeLabel.textContent = "เวลา: " + (timeData || "-");
+          const circle = document.getElementById("circle");
+          const label = document.getElementById("label");
 
-          // ตรวจสอบสถานะเซนเซอร์
-          const sensorOnline = timeData.trim() !== "";
-          sensorIndicator.className = "sensor-circle " + (sensorOnline ? "online" : "offline");
-          sensorLabel.textContent = sensorOnline ? "เซนเซอร์ออนไลน์" : "เซนเซอร์ออฟไลน์";
-
-          // ตรวจสอบค่าการตรวจจับวัตถุ
-          const value = parseFloat(sensorData);
-
-          if (!sensorData || isNaN(value)) {
-            // ไม่พบข้อมูล
-            circle.className = "status-circle";
+          if (isNaN(value)) {
+            circle.className = "status-circle gray";
             label.textContent = "ไม่พบข้อมูล";
             return;
           }
 
-          // รีเฟรชหากค่าเปลี่ยน
+          // รีเฟรชหน้าเว็บถ้าค่าเปลี่ยน
           if (lastValue !== null && lastValue !== value) {
             location.reload();
           }
           lastValue = value;
 
-          if (value <= 16.33333) {
+          if (value <= 16.3333) {
             circle.className = "status-circle red";
-            label.textContent = "ตรวจพบวัตถุ!";
+            label.textContent = "ตรวจพบวัตถุ";
           } else {
             circle.className = "status-circle green";
             label.textContent = "ไม่พบวัตถุ";
           }
         })
         .catch(error => {
-          console.error("เกิดข้อผิดพลาดในการดึงข้อมูล", error);
-          circle.className = "status-circle";
-          label.textContent = "ไม่พบข้อมูล";
-          sensorIndicator.className = "sensor-circle offline";
-          sensorLabel.textContent = "เซนเซอร์ออฟไลน์";
-          timeLabel.textContent = "เวลา: -";
+          console.error("Error:", error);
+          document.getElementById("circle").className = "status-circle gray";
+          document.getElementById("label").textContent = "เกิดข้อผิดพลาด";
         });
     }
 
-    updateStatus(); // โหลดตอนเปิดหน้า
-    setInterval(updateStatus, 10000); // ตรวจทุก 10 วินาที
+    checkSensorData();
+    setInterval(checkSensorData, 10000); // เช็คทุก 10 วินาที
   </script>
 </body>
 </html>
