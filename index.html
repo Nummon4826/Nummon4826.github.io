@@ -74,7 +74,7 @@
 
   <script>
     const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj40";
-    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze";
+    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
     const sheetName = "Test"; // ปรับให้ตรงกับชื่อชีตของคุณ
 
     const circle = document.getElementById("circle");
@@ -86,7 +86,7 @@
     let lastValue = null;
 
     function updateStatus() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj40/values=Test!C4:D5?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze`;
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj40/values=Test!C4:D5?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
       fetch(url)
         .then(res => res.json())
