@@ -5,56 +5,58 @@
   <title>สถานะการตรวจจับวัตถุ</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e9f0f5;
       text-align: center;
-      background-color: #f0f0f0;
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      padding-top: 100px;
     }
+
     .status-circle {
       width: 150px;
       height: 150px;
       border-radius: 50%;
+      margin: 0 auto;
       background-color: gray;
       transition: background-color 0.5s;
     }
+
+    .green { background-color: #4CAF50; }
+    .red { background-color: #F44336; }
+
     .label {
       margin-top: 20px;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
+      color: #333;
     }
+
     .sensor-status {
       position: fixed;
       bottom: 20px;
       left: 20px;
       display: flex;
       align-items: center;
-      font-size: 18px;
+      font-size: 16px;
     }
+
     .sensor-circle {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background-color: gray;
       margin-right: 10px;
       transition: background-color 0.5s;
     }
+
+    .online { background-color: #2196F3; }
+
     .timestamp {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      font-size: 16px;
-      color: #333;
+      font-size: 14px;
+      color: #555;
     }
-    .green { background-color: green; }
-    .red { background-color: red; }
-    .blue { background-color: blue; }
-    .gray { background-color: gray; }
   </style>
 </head>
 <body>
@@ -64,95 +66,100 @@
 
   <div class="sensor-status">
     <div id="sensorIndicator" class="sensor-circle"></div>
-    <span id="sensorLabel">กำลังโหลด...</span>
+    <span id="sensorLabel">กำลังโหลดเซนเซอร์...</span>
   </div>
 
   <div id="timestamp" class="timestamp"></div>
 
-  <audio id="alertSound" src="alert.mp3"></audio>
-
   <script>
-    const spreadsheetId = '1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4';
-    const apiKey = 'AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0';
-    const sheetName = 'Sheet1';
-    const range = 'B4,C2:C4';
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!B4,C2:C4?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+    const sheetName = "Sheet1";
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!B4:C4?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
-    let previousData = null;
+    let lastValues = { C2: null, C3: null, C4: null };
+
+    function isNumeric(val) {
+      return !isNaN(parseFloat(val)) && isFinite(val);
+    }
 
     function fetchData() {
       fetch(url)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-          const values = data.values;
-          if (!values || values.length < 2) {
-            updateUI(null);
-            return;
-          }
-
-          const [b4, c2, c3, c4] = [values[0][0], values[1][0], values[2][0], values[3][0]].map(val => val ? val.trim() : '');
-
-          if (isNaN(c2) || isNaN(c3) || isNaN(c4)) {
-            updateUI(null, b4);
-            return;
-          }
-
-          const sensorData = { c2: Number(c2), c3: Number(c3), c4: Number(c4), b4 };
-          updateUI(sensorData, b4);
-
-          if (JSON.stringify(sensorData) !== JSON.stringify(previousData)) {
-            previousData = sensorData;
+          const rows = data.values;
+          if (!rows || rows.length < 1 || rows[0].length < 4) {
+            updateUI("ไม่พบข้อมูล", "gray", false, "");
             setTimeout(() => location.reload(), 1000);
+            return;
+          }
+
+          const [b4, c2, c3, c4] = rows[0];
+          const timestampEl = document.getElementById("timestamp");
+          timestampEl.textContent = b4 ? `อัปเดตล่าสุด: ${b4}` : "";
+
+          // เซนเซอร์สถานะ
+          const sensorOnline = b4 && b4.trim() !== "";
+          const sensorIndicator = document.getElementById("sensorIndicator");
+          const sensorLabel = document.getElementById("sensorLabel");
+          sensorIndicator.className = "sensor-circle" + (sensorOnline ? " online" : "");
+          sensorLabel.textContent = sensorOnline ? "เซนเซอร์ออนไลน์" : "เซนเซอร์ออฟไลน์";
+
+          const isAnyEmpty = !c2 || !c3 || !c4;
+          const isAnyInvalid = [c2, c3, c4].some(val => !isNumeric(val));
+
+          if (isAnyEmpty) {
+            updateUI("ไม่พบข้อมูล", "gray", sensorOnline, b4);
+            setTimeout(() => location.reload(), 1000);
+          } else if (isAnyInvalid) {
+            updateUI("ข้อมูลไม่ถูกต้อง", "gray", sensorOnline, b4);
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            const numC2 = Number(c2);
+            const numC3 = Number(c3);
+            const numC4 = Number(c4);
+
+            if (
+              lastValues.C2 !== null &&
+              (lastValues.C2 !== numC2 || lastValues.C3 !== numC3 || lastValues.C4 !== numC4)
+            ) {
+              location.reload(); // รีเฟรชเมื่อข้อมูลตัวเลขเปลี่ยน
+            }
+
+            lastValues = { C2: numC2, C3: numC3, C4: numC4 };
+
+            if (numC2 === 12 && numC3 > 25 && numC4 === 12) {
+              updateUI("ไม่พบวัตถุ", "green", sensorOnline, b4);
+            } else if (numC2 < 12 && numC3 <= 25 && numC4 < 12) {
+              updateUI("ตรวจพบวัตถุ!", "red", sensorOnline, b4);
+            } else {
+              updateUI("ข้อมูลไม่ตรงเงื่อนไข", "gray", sensorOnline, b4);
+            }
           }
         })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-          updateUI(null);
+        .catch(err => {
+          console.error("Error loading data:", err);
+          updateUI("เกิดข้อผิดพลาด", "gray", false, "");
+          setTimeout(() => location.reload(), 1000);
         });
     }
 
-    function updateUI(sensorData, b4) {
-      const circle = document.getElementById('circle');
-      const label = document.getElementById('label');
-      const sensorIndicator = document.getElementById('sensorIndicator');
-      const sensorLabel = document.getElementById('sensorLabel');
-      const timestamp = document.getElementById('timestamp');
-      const alertSound = document.getElementById('alertSound');
+    function updateUI(message, colorClass, online, timestamp) {
+      const circle = document.getElementById("circle");
+      const label = document.getElementById("label");
+      const sensorIndicator = document.getElementById("sensorIndicator");
+      const sensorLabel = document.getElementById("sensorLabel");
+      const timestampEl = document.getElementById("timestamp");
 
-      if (!b4) {
-        sensorIndicator.className = 'sensor-circle gray';
-        sensorLabel.textContent = 'เซนเซอร์ออฟไลน์';
-        timestamp.textContent = '';
-      } else {
-        sensorIndicator.className = 'sensor-circle blue';
-        sensorLabel.textContent = 'เซนเซอร์ออนไลน์';
-        timestamp.textContent = `อัปเดตล่าสุด: ${b4}`;
-      }
-
-      if (!sensorData) {
-        circle.className = 'status-circle gray';
-        label.textContent = 'ไม่พบข้อมูล';
-        return;
-      }
-
-      const { c2, c3, c4 } = sensorData;
-
-      if (c2 === 12 && c3 > 25 && c4 === 12) {
-        circle.className = 'status-circle green';
-        label.textContent = 'ไม่พบวัตถุ';
-      } else if (c2 < 12 && c3 <= 25 && c4 < 12) {
-        circle.className = 'status-circle red';
-        label.textContent = 'ตรวจพบวัตถุ!';
-        alertSound.play();
-      } else {
-        circle.className = 'status-circle gray';
-        label.textContent = 'ไม่พบข้อมูล';
-      }
+      circle.className = `status-circle ${colorClass}`;
+      label.textContent = message;
+      sensorIndicator.className = "sensor-circle" + (online ? " online" : "");
+      sensorLabel.textContent = online ? "เซนเซอร์ออนไลน์" : "เซนเซอร์ออฟไลน์";
+      timestampEl.textContent = timestamp ? `อัปเดตล่าสุด: ${timestamp}` : "";
     }
 
-    setInterval(fetchData, 10000);
     fetchData();
+    setInterval(fetchData, 15000); // ตรวจข้อมูลทุก 15 วินาที
   </script>
-
 </body>
 </html>
