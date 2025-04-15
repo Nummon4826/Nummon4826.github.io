@@ -41,9 +41,10 @@
   <div id="label" class="label">กำลังโหลด...</div>
 
   <script>
+    //กำหนดตัวแปรค่าคงที่
     const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const sheetName = "Sheet1"; // เช่น Sheet1
+    const sheetName = "Sheet1"; 
     const cellRange = "D5";
 
     let lastValue = null;
@@ -51,6 +52,7 @@
     function checkSensorData() {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D5?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
+      //เรียกข้อมูลจาก sheets
       fetch(url)
         .then(res => {
           if (!res.ok) throw new Error("URL ผิดพลาดหรือการเข้าถึงล้มเหลว");
@@ -63,6 +65,7 @@
           const circle = document.getElementById("circle");
           const label = document.getElementById("label");
 
+          //เมื่อไม่พบตัวเลขจะมีการแจ้งสถานะไม่พบข้อมูล
           if (isNaN(value)) {
             circle.className = "status-circle gray";
             label.textContent = "ไม่พบข้อมูล";
@@ -91,7 +94,7 @@
     }
 
     checkSensorData();
-    setInterval(checkSensorData, 10000); // เช็คทุก 10 วินาที
+    setInterval(checkSensorData, 10000); // เรียกเช็คข้อมูลใหม่ทุก 10 นาที
   </script>
 </body>
 </html>
