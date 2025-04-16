@@ -37,16 +37,9 @@
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
-    const sheetId = "1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw";
-    const apiKey = "AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8";
-    const sheetName = "Sheet1"; // เปลี่ยนให้ตรงกับชื่อชีต
-    const cellRange = "B1";
-
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw/values/Sheet1!B1?key=AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8`;
-
+    const url = "https://sheets.googleapis.com/v4/spreadsheets/1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw/values=Sheet1!B1?key=AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8";
     const circle = document.getElementById("circle");
     const label = document.getElementById("label");
-
     let lastValue = null;
 
     function fetchData() {
@@ -64,9 +57,8 @@
           }
 
           const num = parseFloat(value);
-
           if (lastValue !== null && num !== lastValue) {
-            location.reload(); // รีเฟรชหากค่าเปลี่ยน
+            location.reload(); // รีเฟรชเมื่อค่ามีการเปลี่ยนแปลง
           }
           lastValue = num;
 
@@ -86,7 +78,7 @@
     }
 
     fetchData(); // โหลดตอนเปิดหน้า
-    setInterval(fetchData, 10000); // อัปเดตทุก 10 วิ
+    setInterval(fetchData, 10000); // เช็คข้อมูลทุก 10 วิ
   </script>
 </body>
 </html>
