@@ -2,99 +2,91 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>สถานะการตรวจจับวัตถุ</title>
+  <title>ตรวจจับวัตถุจากเซนเซอร์</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f6f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      background: #f0f4f8;
+      text-align: center;
+      padding-top: 100px;
     }
 
     .status-circle {
-      width: 160px;
-      height: 160px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
+      margin: 0 auto;
       background-color: gray;
       transition: background-color 0.5s;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
 
     .green { background-color: #4CAF50; }
     .red { background-color: #f44336; }
-    .gray { background-color: gray; }
 
     .label {
-      margin-top: 25px;
       font-size: 24px;
+      margin-top: 20px;
       color: #333;
     }
   </style>
 </head>
 <body>
 
-  <div id="circle" class="status-circle gray"></div>
-  <div id="label" class="label">กำลังโหลด...</div>
+  <div id="circle" class="status-circle"></div>
+  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
-    //กำหนดตัวแปรค่าคงที่
     const sheetId = "1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw";
     const apiKey = "AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8";
-    const sheetName = "Sheet1"; 
+    const sheetName = "Sheet1"; // เปลี่ยนให้ตรงกับชื่อชีต
     const cellRange = "B1";
+
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw/values/Sheet1!B1?key=AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8`;
+
+    const circle = document.getElementById("circle");
+    const label = document.getElementById("label");
 
     let lastValue = null;
 
-    function checkSensorData() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw/values/Sheet1!B1?key=AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8`;
-
-      //เรียกข้อมูลจาก sheets
+    function fetchData() {
       fetch(url)
         .then(res => {
-          if (!res.ok) throw new Error("URL ผิดพลาดหรือการเข้าถึงล้มเหลว");
+          if (!res.ok) throw new Error("URL ผิดหรือไม่สามารถเข้าถึงได้");
           return res.json();
         })
         .then(data => {
-          const rawValue = data.values?.[0]?.[0];
-          const value = parseFloat(rawValue);
-
-          const circle = document.getElementById("circle");
-          const label = document.getElementById("label");
-
-          //เมื่อไม่พบตัวเลขจะมีการแจ้งสถานะไม่พบข้อมูล
-          if (isNaN(value)) {
-            circle.className = "status-circle gray";
+          const value = data.values?.[0]?.[0];
+          if (!value || isNaN(parseFloat(value))) {
+            circle.className = "status-circle";
             label.textContent = "ไม่พบข้อมูล";
             return;
           }
 
-          // รีเฟรชหน้าเว็บถ้าค่าเปลี่ยน
-          if (lastValue !== null && lastValue !== value) {
-            location.reload();
-          }
-          lastValue = value;
+          const num = parseFloat(value);
 
-          if (value <= 16.3333) {
+          if (lastValue !== null && num !== lastValue) {
+            location.reload(); // รีเฟรชหากค่าเปลี่ยน
+          }
+          lastValue = num;
+
+          if (num <= 16.3333) {
             circle.className = "status-circle red";
-            label.textContent = "ตรวจพบวัตถุ";
+            label.textContent = "พบวัตถุ";
           } else {
             circle.className = "status-circle green";
             label.textContent = "ไม่พบวัตถุ";
           }
         })
         .catch(error => {
-          console.error("Error:", error);
-          document.getElementById("circle").className = "status-circle gray";
-          document.getElementById("label").textContent = "เกิดข้อผิดพลาด";
+          console.error(error);
+          circle.className = "status-circle";
+          label.textContent = "เกิดข้อผิดพลาด";
         });
     }
 
-    checkSensorData();
-    setInterval(checkSensorData, 10000); // เรียกเช็คข้อมูลใหม่ทุก 10 นาที
+    fetchData(); // โหลดตอนเปิดหน้า
+    setInterval(fetchData, 10000); // อัปเดตทุก 10 วิ
   </script>
 </body>
 </html>
