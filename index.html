@@ -42,15 +42,15 @@
 
   <script>
     //กำหนดตัวแปรค่าคงที่
-    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
-    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+    const sheetId = "1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw";
+    const apiKey = "AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8";
     const sheetName = "Sheet1"; 
-    const cellRange = "D5";
+    const cellRange = "B1";
 
     let lastValue = null;
 
     function checkSensorData() {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D5?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/1xzfCzsJgy2o45u5LuWgKuPWaceMwjL5IlQEJJK4_7Aw/values/Sheet1!B1?key=AIzaSyDd0zuxYYju4O8-WNYoHrZnL-lZP6QhFW8`;
 
       //เรียกข้อมูลจาก sheets
       fetch(url)
