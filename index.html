@@ -9,6 +9,15 @@
       background: #f0f4f8;
       text-align: center;
       padding-top: 100px;
+      margin: 0;
+    }
+
+    .time-display {
+      position: fixed;
+      top: 10px;
+      left: 20px;
+      font-size: 18px;
+      color: #555;
     }
 
     .status-circle {
@@ -18,11 +27,47 @@
       margin: 0 auto;
       background-color: gray;
       transition: background-color 0.5s;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      position: relative;
     }
 
-    .green { background-color: #4CAF50; }
-    .red { background-color: #f44336; }
+    .status-circle::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 150px;
+      height: 150px;
+      background-color: inherit;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.5;
+      animation: pulse 2s infinite;
+      z-index: -1;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+      }
+      70% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .green {
+      background-color: #4CAF50;
+    }
+
+    .red {
+      background-color: #f44336;
+    }
 
     .label {
       font-size: 24px;
@@ -33,14 +78,23 @@
 </head>
 <body>
 
+  <div class="time-display" id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
+
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
-    const url = "https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:D1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+    const url = "https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheets1!D1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
     const circle = document.getElementById("circle");
     const label = document.getElementById("label");
+    const timeDisplay = document.getElementById("timeDisplay");
     let lastValue = null;
+
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('th-TH');
+      timeDisplay.textContent = `เวลาปัจจุบัน: ${timeStr}`;
+    }
 
     function fetchData() {
       fetch(url)
@@ -77,8 +131,11 @@
         });
     }
 
-    fetchData(); // โหลดตอนเปิดหน้า
-    setInterval(fetchData, 10000); // เช็คข้อมูลทุก 10 วิ
+    updateClock();
+    setInterval(updateClock, 1000); // อัปเดตนาฬิกาทุกวินาที
+
+    fetchData();
+    setInterval(fetchData, 10000); // อัปเดตข้อมูลทุก 10 วินาที
   </script>
 </body>
 </html>
