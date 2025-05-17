@@ -78,7 +78,7 @@
 </head>
 <body>
 
-  <div class="time-display" id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
+  <div class="time-display" id="timeDisplay">เวลาล่าสุด: --:--:--</div>
 
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
@@ -90,10 +90,10 @@
     const timeDisplay = document.getElementById("timeDisplay");
     let lastValue = null;
 
-    function updateClock() {
+    function updateTimeDisplay() {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('th-TH');
-      timeDisplay.textContent = `เวลาปัจจุบัน: ${timeStr}`;
+      timeDisplay.textContent = `เวลาล่าสุด: ${timeStr}`;
     }
 
     function fetchData() {
@@ -111,10 +111,13 @@
           }
 
           const num = parseFloat(value);
+
           if (lastValue !== null && num !== lastValue) {
             location.reload(); // รีเฟรชเมื่อค่ามีการเปลี่ยนแปลง
           }
+
           lastValue = num;
+          updateTimeDisplay(); // แสดงเวลาตอนที่มีการประมวลผลข้อมูล
 
           if (num <= 16.3333) {
             circle.className = "status-circle red";
@@ -130,9 +133,6 @@
           label.textContent = "เกิดข้อผิดพลาด";
         });
     }
-
-    updateClock();
-    setInterval(updateClock, 1000); // อัปเดตนาฬิกาทุกวินาที
 
     fetchData();
     setInterval(fetchData, 10000); // อัปเดตข้อมูลทุก 10 วินาที
