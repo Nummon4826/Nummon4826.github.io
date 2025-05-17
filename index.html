@@ -17,7 +17,8 @@
       top: 10px;
       left: 20px;
       font-size: 18px;
-      color: #555;
+      color: #333;
+      text-align: left;
     }
 
     .status-circle {
@@ -78,46 +79,57 @@
 </head>
 <body>
 
-  <div class="time-display" id="timeDisplay">เวลาล่าสุด: --:--:--</div>
+  <div class="time-display">
+    <div id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
+    <div id="sheetTime">เวลาจากเซนเซอร์: กำลังโหลด...</div>
+  </div>
 
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
-    const url = "https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:D1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+
+    const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:D2?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+
     const circle = document.getElementById("circle");
     const label = document.getElementById("label");
     const timeDisplay = document.getElementById("timeDisplay");
+    const sheetTime = document.getElementById("sheetTime");
+
     let lastValue = null;
 
-    function updateTimeDisplay() {
+    function updateClock() {
       const now = new Date();
-      const timeStr = now.toLocaleTimeString('th-TH');
-      timeDisplay.textContent = `เวลาล่าสุด: ${timeStr}`;
+      timeDisplay.textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString('th-TH');
     }
 
     function fetchData() {
-      fetch(url)
+      fetch(dataUrl)
         .then(res => {
-          if (!res.ok) throw new Error("URL ผิดหรือไม่สามารถเข้าถึงได้");
+          if (!res.ok) throw new Error("ไม่สามารถเข้าถึงข้อมูลจาก Google Sheet ได้");
           return res.json();
         })
         .then(data => {
-          const value = data.values?.[0]?.[0];
-          if (!value || isNaN(parseFloat(value))) {
+          const values = data.values || [];
+          const valueD1 = values?.[0]?.[0]; // ค่าตรวจจับวัตถุ
+          const valueD2 = values?.[1]?.[0]; // เวลาเซนเซอร์
+
+          // แสดงเวลาเซนเซอร์
+          sheetTime.textContent = valueD2 ? "เวลาจากเซนเซอร์: " + valueD2 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
+
+          if (!valueD1 || isNaN(parseFloat(valueD1))) {
             circle.className = "status-circle";
             label.textContent = "ไม่พบข้อมูล";
             return;
           }
 
-          const num = parseFloat(value);
-
+          const num = parseFloat(valueD1);
           if (lastValue !== null && num !== lastValue) {
-            location.reload(); // รีเฟรชเมื่อค่ามีการเปลี่ยนแปลง
+            location.reload(); // รีเฟรชหากค่าตรวจจับเปลี่ยน
           }
-
           lastValue = num;
-          updateTimeDisplay(); // แสดงเวลาตอนที่มีการประมวลผลข้อมูล
 
           if (num <= 16.3333) {
             circle.className = "status-circle red";
@@ -127,15 +139,19 @@
             label.textContent = "ไม่พบวัตถุ";
           }
         })
-        .catch(error => {
-          console.error(error);
+        .catch(err => {
+          console.error(err);
           circle.className = "status-circle";
           label.textContent = "เกิดข้อผิดพลาด";
+          sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
         });
     }
 
+    updateClock();
+    setInterval(updateClock, 1000); // อัปเดตเวลาปัจจุบันทุกวินาที
     fetchData();
-    setInterval(fetchData, 10000); // อัปเดตข้อมูลทุก 10 วินาที
+    setInterval(fetchData, 1000);   // เรียลไทม์: ดึงข้อมูลจาก Google Sheet ทุกวินาที
   </script>
+
 </body>
 </html>
