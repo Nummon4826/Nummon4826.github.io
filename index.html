@@ -16,6 +16,17 @@
       background: url("IMG_1851.jpeg") no-repeat center center fixed;
       background-size: cover;
     }
+    body.bg-desert {
+      background: url("ดีไซน์ที่ยังไม่ได้ตั้งชื่อ.jpg") no-repeat center center fixed;
+      background-size: cover;
+      animation: windEffect 5s infinite linear;
+    }
+
+    @keyframes windEffect {
+      0% { background-position-x: 0; }
+      50% { background-position-x: 10px; }
+      100% { background-position-x: 0; }
+    }
 
     /* Header */
     header {
@@ -134,11 +145,17 @@
     }
   </style>
 </head>
-<body class="white-bg hide-snow">
+<body>
 
   <header>
     SENSOR PROJECT
-    <button class="toggle-bg-btn" onclick="toggleBackground()">เปลี่ยนพื้นหลัง</button>
+    <button class="toggle-bg-btn" onclick="showThemeMenu()">เปลี่ยนพื้นหลัง</button>
+    <div id="themeMenu" style="display:none; position:absolute; top:50px; right:20px; background:white; border:1px solid #ccc; padding:10px; border-radius:5px; z-index:999;">
+    <div onclick="setTheme('white')">พื้นหลังสีขาว</div>
+    <div onclick="setTheme('snow')">ธีมหิมะ</div>
+    <div onclick="setTheme('desert')">ธีมทะเลทราย</div>
+    </div>
+
   </header>
 
   <div class="time-popup">
@@ -206,6 +223,31 @@
         });
     }
 
+    function setTheme(theme) {
+      localStorage.setItem("selectedTheme", theme); // เก็บธีมที่เลือกไว้
+
+      document.body.classList.remove("white-bg", "bg-image", "bg-desert", "hide-snow");
+
+      if (theme === "white") {
+      document.body.classList.add("white-bg");
+      } else if (theme === "snow") {
+      document.body.classList.add("bg-image");
+      } else if (theme === "desert") {
+      document.body.classList.add("bg-desert");
+    }
+
+    if (theme !== "snow") {
+       document.body.classList.add("hide-snow");
+    }
+
+  document.getElementById("themeMenu").style.display = "none";
+    }
+
+    function applySavedTheme() {
+      const savedTheme = localStorage.getItem("selectedTheme") || "white";
+      setTheme(savedTheme);
+    }
+
     function createSnowflake() {
       const snowflake = document.createElement("div");
       snowflake.classList.add("snowflake");
@@ -229,6 +271,7 @@
 
     updateClock();
     fetchData();
+    applySavedTheme(); // เรียกใช้เมื่อเริ่มโหลดเว็บ
   </script>
 
 </body>
