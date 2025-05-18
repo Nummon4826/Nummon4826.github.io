@@ -179,9 +179,9 @@
         .then(data => {
           const values = data.values || [];
           const d1 = values?.[0]?.[0];
-          const d2 = values?.[1]?.[0];
+          const e1 = values?.[1]?.[0];
 
-          sheetTime.textContent = E1 ? "เวลาจากเซนเซอร์: " + E1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
+          sheetTime.textContent = e1 ? "เวลาจากเซนเซอร์: " + e1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
 
           if (!d1 || isNaN(parseFloat(d1))) {
             circle.className = "status-circle";
