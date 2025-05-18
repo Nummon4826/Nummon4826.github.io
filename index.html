@@ -128,6 +128,14 @@
         opacity: 0;
       }
     }
+    @keyframes wind {
+       0% { background-position: 0 0; }
+       50% { background-position: 5px 0; }
+       100% { background-position: 0 0; }
+    }
+     .wind-effect {
+        animation: wind 2s infinite;
+    }
 
     .hide-snow .snowflake {
       display: none;
@@ -138,7 +146,26 @@
 
   <header>
     SENSOR PROJECT
-    <button class="toggle-bg-btn" onclick="toggleBackground()">เปลี่ยนพื้นหลัง</button>
+    <!-- ปุ่มเปิดป๊อปอัพเลือกธีม -->
+<button id="themeButton">เปลี่ยนพื้นหลัง</button>
+
+<!-- ป็อปอัพเลือกธีม -->
+<div id="themePopup" class="popup hidden">
+  <h3>เลือกพื้นหลัง</h3>
+  <div class="theme-option" onclick="setTheme('white')">
+    <img src="white-preview.jpg" alt="พื้นหลังสีขาว">
+    <p>พื้นหลังสีขาว</p>
+  </div>
+  <div class="theme-option" onclick="setTheme('snow')">
+    <img src="IMG_1851.jpeg" alt="พื้นหลังหิมะ">
+    <p>ภาพหิมะ + หิมะตก</p>
+  </div>
+  <div class="theme-option" onclick="setTheme('desert')">
+    <img src="ดีไซน์ที่ยังไม่ได้ตั้งชื่อ.jpg" alt="พื้นหลังทะเลทราย">
+    <p>ทะเลทราย + เอฟเฟคลม</p>
+  </div>
+</div>
+
   </header>
 
   <div class="time-popup">
@@ -205,6 +232,33 @@
           sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
         });
     }
+    
+    function setTheme(theme) {
+      if (theme === 'white') {
+      document.body.style.backgroundImage = 'none';
+      document.body.style.backgroundColor = 'white';
+      removeEffects();
+      } else if (theme === 'snow') {
+        document.body.style.backgroundImage = 'url("IMG_1851.jpeg")';
+        document.body.style.backgroundSize = 'cover';
+        startSnowEffect();
+      } else if (theme === 'desert') {
+        document.body.style.backgroundImage = 'url("ดีไซน์ที่ยังไม่ได้ตั้งชื่อ.jpg")';
+        document.body.style.backgroundSize = 'cover';
+        startWindEffect();
+      }
+        document.getElementById('themePopup').classList.add('hidden');
+      }
+
+    function startWindEffect() {
+      removeEffects();
+      document.body.classList.add('wind-effect');
+      }
+
+    function removeEffects() {
+      document.body.classList.remove('wind-effect');
+      stopSnowEffect(); // ฟังก์ชันหยุดหิมะ
+      }
 
     function createSnowflake() {
       const snowflake = document.createElement("div");
