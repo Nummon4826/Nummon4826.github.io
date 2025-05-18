@@ -6,40 +6,36 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #e3f2fd;
       margin: 0;
       overflow: hidden;
+      background: url("IMG_1851.jpeg") no-repeat center center fixed;
+      background-size: cover;
     }
 
     /* Header */
     header {
-      background-color: #2196F3;
+      background-color: #0d47a1; /* สีกรม */
       color: white;
       text-align: center;
       padding: 20px;
       font-size: 28px;
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 10;
     }
 
-    /* Time Pop-up */
+    /* Time Pop-up (bottom-left) */
     .time-popup {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       left: 20px;
-      background: white;
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 10px;
       padding: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       z-index: 10;
-      text-align: left;
-      font-size: 16px;
-      animation: fadeIn 1s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0;}
-      to {opacity: 1;}
+      font-size: 14px;
     }
 
     /* Sensor Circle */
@@ -51,6 +47,7 @@
       background-color: gray;
       transition: background-color 0.5s;
       position: relative;
+      z-index: 5;
     }
 
     .status-circle::before {
@@ -89,10 +86,11 @@
     .label {
       font-size: 24px;
       margin-top: 20px;
+      text-align: center;
       color: #333;
     }
 
-    /* Snow effect */
+    /* Snow effect (back layer) */
     .snowflake {
       position: fixed;
       top: -10px;
@@ -100,7 +98,7 @@
       font-size: 1em;
       user-select: none;
       pointer-events: none;
-      z-index: 9999;
+      z-index: 1;
       animation: fall linear infinite;
     }
 
@@ -146,7 +144,7 @@
     function fetchData() {
       fetch(dataUrl)
         .then(res => {
-          if (!res.ok) throw new Error("การเชื่อมต่อผิดพลาด");
+          if (!res.ok) throw new Error("ผิดพลาดในการเชื่อมต่อ");
           return res.json();
         })
         .then(data => {
@@ -183,7 +181,6 @@
         });
     }
 
-    // Snow Effect
     function createSnowflake() {
       const snowflake = document.createElement("div");
       snowflake.classList.add("snowflake");
@@ -192,10 +189,7 @@
       snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
       snowflake.innerText = "❄";
       document.body.appendChild(snowflake);
-
-      setTimeout(() => {
-        snowflake.remove();
-      }, 5000);
+      setTimeout(() => snowflake.remove(), 5000);
     }
 
     setInterval(updateClock, 1000);
