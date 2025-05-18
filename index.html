@@ -21,6 +21,7 @@
       font-size: 28px;
       font-weight: bold;
       position: relative;
+      transition: background 0.5s;
       z-index: 2;
     }
 
@@ -253,10 +254,16 @@
       body.style.background = "black";
       snow.style.display = "none";
     } else if (theme === "image") {
-      body.style.background = "url('IMG_1851.jpeg')";
+      body.style.backgroundImage = "url('IMG_1851.jpeg')";
+      body.style.backgroundRepeat = "no-repeat";
       body.style.backgroundSize = "cover";
+      body.style.backgroundPosition = "center center";
+      body.style.backgroundColor = ""; // ล้างพื้นหลังสีเดิม
+      header.style.backgroundColor = "#2A8CA4";
+      header.style.color = "white";
       snow.style.display = "block";
-    }
+  }
+
 
     document.getElementById("themeModal").style.display = "none";
   }
