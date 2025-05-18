@@ -172,112 +172,113 @@
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
-    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
-    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:E1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+  const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+  const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+  const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!D1:E1?key=${apiKey}`;
 
-    const circle = document.getElementById("circle");
-    const label = document.getElementById("label");
-    const timeDisplay = document.getElementById("timeDisplay");
-    const sheetTime = document.getElementById("sheetTime");
+  const circle = document.getElementById("circle");
+  const label = document.getElementById("label");
+  const timeDisplay = document.getElementById("timeDisplay");
+  const sheetTime = document.getElementById("sheetTime");
+  const themeMenu = document.getElementById("themeMenu");
 
-    let lastValue = null;
+  let lastValue = null;
 
-    function updateClock() {
-      const now = new Date();
-      timeDisplay.textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString('th-TH');
-    }
+  function updateClock() {
+    const now = new Date();
+    timeDisplay.textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString('th-TH');
+  }
 
-    function fetchData() {
-      fetch(dataUrl)
-        .then(res => {
-          if (!res.ok) throw new Error("ผิดพลาดในการเชื่อมต่อ");
-          return res.json();
-        })
-        .then(data => {
-          const values = data.values || [];
-          const d1 = values?.[0]?.[0];
-          const e1 = values?.[0]?.[1];
+  function fetchData() {
+    fetch(dataUrl)
+      .then(res => {
+        if (!res.ok) throw new Error("ผิดพลาดในการเชื่อมต่อ");
+        return res.json();
+      })
+      .then(data => {
+        const values = data.values || [];
+        const d1 = values?.[0]?.[0];
+        const e1 = values?.[0]?.[1];
 
-          sheetTime.textContent = e1 ? "เวลาจากเซนเซอร์: " + e1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
+        sheetTime.textContent = e1 ? "เวลาจากเซนเซอร์: " + e1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
 
-          if (!d1 || isNaN(parseFloat(d1))) {
-            circle.className = "status-circle";
-            label.textContent = "ไม่พบข้อมูล";
-            return;
-          }
-
-          const num = parseFloat(d1);
-          if (lastValue !== null && num !== lastValue) {
-            location.reload();
-          }
-          lastValue = num;
-
-          if (num <= 16.3333) {
-            circle.className = "status-circle red";
-            label.textContent = "พบวัตถุ";
-          } else {
-            circle.className = "status-circle green";
-            label.textContent = "ไม่พบวัตถุ";
-          }
-        })
-        .catch(() => {
+        if (!d1 || isNaN(parseFloat(d1))) {
           circle.className = "status-circle";
-          label.textContent = "เกิดข้อผิดพลาด";
-          sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
-        });
-    }
+          label.textContent = "ไม่พบข้อมูล";
+          return;
+        }
 
-    function setTheme(theme) {
-      localStorage.setItem("selectedTheme", theme); // เก็บธีมที่เลือกไว้
+        const num = parseFloat(d1);
+        if (lastValue !== null && num !== lastValue) {
+          location.reload();
+        }
+        lastValue = num;
 
-      document.body.classList.remove("white-bg", "bg-image", "bg-desert", "hide-snow");
+        if (num <= 16.3333) {
+          circle.className = "status-circle red";
+          label.textContent = "พบวัตถุ";
+        } else {
+          circle.className = "status-circle green";
+          label.textContent = "ไม่พบวัตถุ";
+        }
+      })
+      .catch(() => {
+        circle.className = "status-circle";
+        label.textContent = "เกิดข้อผิดพลาด";
+        sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
+      });
+  }
 
-      if (theme === "white") {
-      document.body.classList.add("white-bg");
-      } else if (theme === "snow") {
+  function createSnowflake() {
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.style.left = Math.random() * window.innerWidth + "px";
+    snowflake.style.fontSize = Math.random() * 10 + 10 + "px";
+    snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
+    snowflake.innerText = "❄";
+    document.body.appendChild(snowflake);
+    setTimeout(() => snowflake.remove(), 5000);
+  }
+
+  function applyTheme(theme) {
+    document.body.classList.remove("white-bg", "bg-image", "bg-desert", "hide-snow");
+
+    if (theme === "white") {
+      document.body.classList.add("white-bg", "hide-snow");
+    } else if (theme === "snow") {
       document.body.classList.add("bg-image");
-      } else if (theme === "desert") {
-      document.body.classList.add("bg-desert");
+    } else if (theme === "desert") {
+      document.body.classList.add("bg-desert", "hide-snow");
     }
 
-    if (theme !== "snow") {
-       document.body.classList.add("hide-snow");
+    localStorage.setItem("theme", theme);
+  }
+
+  function setTheme(theme) {
+    applyTheme(theme);
+    themeMenu.style.display = "none";
+  }
+
+  function showThemeMenu() {
+    themeMenu.style.display = (themeMenu.style.display === "block") ? "none" : "block";
+  }
+
+  // โหลดธีมที่เคยเลือกไว้
+  const savedTheme = localStorage.getItem("theme") || "white";
+  applyTheme(savedTheme);
+
+  setInterval(updateClock, 1000);
+  setInterval(fetchData, 1000);
+  setInterval(() => {
+    if (localStorage.getItem("theme") === "snow") {
+      createSnowflake();
     }
+  }, 200);
 
-  document.getElementById("themeMenu").style.display = "none";
-    }
+  updateClock();
+  fetchData();
+</script>
 
-    function applySavedTheme() {
-      const savedTheme = localStorage.getItem("selectedTheme") || "white";
-      setTheme(savedTheme);
-    }
-
-    function createSnowflake() {
-      const snowflake = document.createElement("div");
-      snowflake.classList.add("snowflake");
-      snowflake.style.left = Math.random() * window.innerWidth + "px";
-      snowflake.style.fontSize = Math.random() * 10 + 10 + "px";
-      snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
-      snowflake.innerText = "❄";
-      document.body.appendChild(snowflake);
-      setTimeout(() => snowflake.remove(), 5000);
-    }
-
-    function toggleBackground() {
-      document.body.classList.toggle("white-bg");
-      document.body.classList.toggle("bg-image");
-      document.body.classList.toggle("hide-snow");
-    }
-
-    setInterval(updateClock, 1000);
-    setInterval(fetchData, 1000);
-    setInterval(createSnowflake, 200);
-
-    updateClock();
-    fetchData();
-    applySavedTheme(); // เรียกใช้เมื่อเริ่มโหลดเว็บ
-  </script>
 
 </body>
 </html>
