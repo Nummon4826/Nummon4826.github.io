@@ -2,292 +2,234 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Sensor Project</title>
+  <title>SENSOR PROJECT</title>
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: white;
-      background-size: cover;
-      background-position: center;
-      transition: background 0.5s;
+      overflow: hidden;
+      background: #ffffff; /* เริ่มต้นเป็นสีขาว */
+      transition: background 1s ease;
     }
 
+    body.bg-image {
+      background: url("IMG_1851.jpeg") no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    /* Header */
     header {
-      background-color: #007BFF;
+      background-color: #0d47a1;
       color: white;
-      padding: 15px;
       text-align: center;
+      padding: 20px;
       font-size: 28px;
       font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 10;
       position: relative;
-      z-index: 2;
     }
 
-    .theme-button {
-      position: fixed;
-      top: 20px;
+    .toggle-bg-btn {
+      position: absolute;
+      top: 15px;
       right: 20px;
-      padding: 10px 15px;
-      background-color: #007BFF;
-      color: white;
+      background-color: #ffffff;
+      color: #0d47a1;
+      padding: 8px 16px;
       border: none;
       border-radius: 5px;
-      cursor: pointer;
-      z-index: 3;
-    }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(5px);
-      z-index: 4;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      width: 250px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-
-    .theme-option {
-      margin-bottom: 15px;
-      cursor: pointer;
-    }
-
-    .theme-option img {
-      width: 100%;
-      border-radius: 8px;
-      border: 2px solid #007BFF;
-    }
-
-    .theme-option span {
-      display: block;
-      margin-top: 5px;
       font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
     }
 
-    .time-box {
+    .toggle-bg-btn:hover {
+      background-color: #eeeeee;
+    }
+
+    .time-popup {
       position: fixed;
       bottom: 20px;
       left: 20px;
       background: rgba(255, 255, 255, 0.9);
-      padding: 10px 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-      z-index: 2;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 10;
+      font-size: 14px;
     }
 
-    #snow {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .circle {
-      width: 200px;
-      height: 200px;
+    .status-circle {
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
+      margin: 120px auto 0;
       background-color: gray;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      margin: 100px auto;
+      transition: background-color 0.5s;
       position: relative;
-      z-index: 1;
+      z-index: 5;
     }
 
-    .pulse {
-      animation: ripple 2s infinite;
+    .status-circle::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 160px;
+      height: 160px;
+      background-color: inherit;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.5;
+      animation: pulse 2s infinite;
+      z-index: -1;
     }
 
-    @keyframes ripple {
+    @keyframes pulse {
       0% {
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
       }
       70% {
-        box-shadow: 0 0 0 20px rgba(0, 123, 255, 0);
+        transform: translate(-50%, -50%) scale(1.6);
+        opacity: 0;
       }
       100% {
-        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
       }
+    }
+
+    .green { background-color: #4CAF50; }
+    .red { background-color: #f44336; }
+
+    .label {
+      font-size: 24px;
+      margin-top: 20px;
+      text-align: center;
+      color: #333;
+    }
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 1em;
+      user-select: none;
+      pointer-events: none;
+      z-index: 1;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+
+    .hide-snow .snowflake {
+      display: none;
     }
   </style>
 </head>
-<body>
+<body class="white-bg hide-snow">
 
-<canvas id="snow"></canvas>
+  <header>
+    SENSOR PROJECT
+    <button class="toggle-bg-btn" onclick="toggleBackground()">เปลี่ยนพื้นหลัง</button>
+  </header>
 
-<header>SENSOR PROJECT</header>
-<button class="theme-button" onclick="toggleModal()">ธีม</button>
-
-<!-- Modal -->
-<div class="modal-overlay" id="themeModal" onclick="closeModal(event)">
-  <div class="modal-content">
-    <div class="theme-option" onclick="setTheme('white')">
-      <div style="background:white; height:80px;"></div>
-      <span>พื้นหลังสีขาว</span>
-    </div>
-    <div class="theme-option" onclick="setTheme('black')">
-      <div style="background:black; height:80px;"></div>
-      <span>พื้นหลังสีดำ</span>
-    </div>
-    <div class="theme-option" onclick="setTheme('image')">
-      <img src="IMG_1851.jpeg" alt="bg">
-      <span>ภาพแบ็คกราวด์</span>
-    </div>
+  <div class="time-popup">
+    <div id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
+    <div id="sheetTime">เวลาจากเซนเซอร์: กำลังโหลด...</div>
   </div>
-</div>
 
-<div class="circle" id="sensorCircle">กำลังโหลด...</div>
-<div class="time-box" id="timeBox">เวลา: กำลังโหลด...</div>
+  <div id="circle" class="status-circle"></div>
+  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
-<script>
-  const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
-  const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-  let lastValue = null;
+  <script>
+    const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
+    const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
+    const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values=Sheet1!D1:E1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
-  async function fetchSensorData() {
-    try {
-      const [d1, e1] = await Promise.all([
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/D1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`).then(r => r.json()),
-        fetch(`https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/E1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`).then(r => r.json())
-      ]);
+    const circle = document.getElementById("circle");
+    const label = document.getElementById("label");
+    const timeDisplay = document.getElementById("timeDisplay");
+    const sheetTime = document.getElementById("sheetTime");
 
-      const d1Value = d1.values?.[0]?.[0];
-      const e1Value = e1.values?.[0]?.[0];
-      const circle = document.getElementById("sensorCircle");
-      const timeBox = document.getElementById("timeBox");
+    let lastValue = null;
 
-      timeBox.textContent = "เวลา: " + (e1Value || "ไม่พบเวลา");
-
-      if (!d1Value || isNaN(parseFloat(d1Value))) {
-        circle.style.backgroundColor = "gray";
-        circle.textContent = "ไม่พบข้อมูล";
-        circle.classList.remove("pulse");
-        return;
-      }
-
-      const value = parseFloat(d1Value);
-      if (lastValue !== null && value !== lastValue) {
-        location.reload();
-      }
-      lastValue = value;
-
-      circle.classList.add("pulse");
-
-      if (value <= 16.3333) {
-        circle.style.backgroundColor = "red";
-        circle.textContent = "ตรวจพบวัตถุ";
-      } else {
-        circle.style.backgroundColor = "green";
-        circle.textContent = "ไม่พบวัตถุ";
-      }
-    } catch (err) {
-      document.getElementById("sensorCircle").textContent = "เกิดข้อผิดพลาด";
-      console.error(err);
-    }
-  }
-
-  setInterval(fetchSensorData, 1000);
-  fetchSensorData();
-
-  function toggleModal() {
-    document.getElementById("themeModal").style.display = "flex";
-  }
-
-  function closeModal(event) {
-    if (event.target.classList.contains('modal-overlay')) {
-      document.getElementById("themeModal").style.display = "none";
-    }
-  }
-
-  function setTheme(theme) {
-    const body = document.body;
-    const snow = document.getElementById("snow");
-
-    if (theme === "white") {
-      body.style.background = "white";
-      snow.style.display = "none";
-    } else if (theme === "black") {
-      body.style.background = "black";
-      snow.style.display = "none";
-    } else if (theme === "image") {
-      body.style.background = "url('IMG_1851.jpeg')";
-      body.style.backgroundSize = "cover";
-      snow.style.display = "block";
+    function updateClock() {
+      const now = new Date();
+      timeDisplay.textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString('th-TH');
     }
 
-    document.getElementById("themeModal").style.display = "none";
-  }
+    function fetchData() {
+      fetch(dataUrl)
+        .then(res => {
+          if (!res.ok) throw new Error("ผิดพลาดในการเชื่อมต่อ");
+          return res.json();
+        })
+        .then(data => {
+          const values = data.values || [];
+          const d1 = values?.[0]?.[0];
+          const e1 = values?.[0]?.[1];
 
-  // Snow animation
-  const canvas = document.getElementById("snow");
-  const ctx = canvas.getContext("2d");
-  let width, height;
-  let snowflakes = [];
+          sheetTime.textContent = e1 ? "เวลาจากเซนเซอร์: " + e1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
 
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
+          if (!d1 || isNaN(parseFloat(d1))) {
+            circle.className = "status-circle";
+            label.textContent = "ไม่พบข้อมูล";
+            return;
+          }
 
-  function createSnowflakes() {
-    const x = Math.random() * width;
-    const y = Math.random() * height;
-    const radius = Math.random() * 4 + 1;
-    const speed = Math.random() * 1 + 0.5;
-    snowflakes.push({ x, y, radius, speed });
-  }
+          const num = parseFloat(d1);
+          if (lastValue !== null && num !== lastValue) {
+            location.reload();
+          }
+          lastValue = num;
 
-  function drawSnowflakes() {
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    for (let flake of snowflakes) {
-      ctx.moveTo(flake.x, flake.y);
-      ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+          if (num <= 16.3333) {
+            circle.className = "status-circle red";
+            label.textContent = "พบวัตถุ";
+          } else {
+            circle.className = "status-circle green";
+            label.textContent = "ไม่พบวัตถุ";
+          }
+        })
+        .catch(() => {
+          circle.className = "status-circle";
+          label.textContent = "เกิดข้อผิดพลาด";
+          sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
+        });
     }
-    ctx.fill();
-    moveSnowflakes();
-  }
 
-  function moveSnowflakes() {
-    for (let flake of snowflakes) {
-      flake.y += flake.speed;
-      if (flake.y > height) {
-        flake.y = 0;
-        flake.x = Math.random() * width;
-      }
+    function createSnowflake() {
+      const snowflake = document.createElement("div");
+      snowflake.classList.add("snowflake");
+      snowflake.style.left = Math.random() * window.innerWidth + "px";
+      snowflake.style.fontSize = Math.random() * 10 + 10 + "px";
+      snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
+      snowflake.innerText = "❄";
+      document.body.appendChild(snowflake);
+      setTimeout(() => snowflake.remove(), 5000);
     }
-  }
 
-  function updateSnowfall() {
-    createSnowflakes();
-    drawSnowflakes();
-    requestAnimationFrame(updateSnowfall);
-  }
+    function toggleBackground() {
+      document.body.classList.toggle("white-bg");
+      document.body.classList.toggle("bg-image");
+      document.body.classList.toggle("hide-snow");
+    }
 
-  window.addEventListener("resize", resize);
-  resize();
-  updateSnowfall();
-  document.getElementById("snow").style.display = "none";
-</script>
+    setInterval(updateClock, 1000);
+    setInterval(fetchData, 1000);
+    setInterval(createSnowflake, 200);
+
+    updateClock();
+    fetchData();
+  </script>
+
 </body>
 </html>
