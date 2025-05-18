@@ -11,11 +11,6 @@
       background-size: cover;
       background-position: center;
       transition: background 0.5s;
-      background-image: url('IMG_1851.jpeg');
-      background-size: cover;
-      background-position: center bottom;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
     }
 
     header {
@@ -26,7 +21,6 @@
       font-size: 28px;
       font-weight: bold;
       position: relative;
-      transition: background 0.5s;
       z-index: 2;
     }
 
@@ -81,6 +75,17 @@
       font-weight: bold;
     }
 
+    .time-box {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
     #snow {
       position: fixed;
       top: 0;
@@ -96,13 +101,19 @@
       height: 200px;
       border-radius: 50%;
       background-color: gray;
-      margin: 100px auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin: 100px auto;
       position: relative;
       z-index: 1;
-      animation: ripple 2s infinite;
     }
 
-    .circle.pulse {
+    .pulse {
       animation: ripple 2s infinite;
     }
 
@@ -116,37 +127,6 @@
       100% {
         box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
       }
-    }
-
-    #statusText {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    .time-box {
-      position: fixed;
-      bottom: 60px;
-      left: 20px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 10px 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-      z-index: 2;
-    }
-
-    .time-now {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      font-size: 14px;
-      color: #333;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 5px 10px;
-      border-radius: 5px;
-      z-index: 2;
     }
   </style>
 </head>
@@ -175,10 +155,8 @@
   </div>
 </div>
 
-<div class="circle" id="sensorCircle"></div>
-<div id="statusText">กำลังโหลด...</div>
-<div class="time-box" id="sensorTime">เวลาเซนเซอร์: กำลังโหลด...</div>
-<div class="time-now" id="currentTime">เวลาปัจจุบัน: --:--:--</div>
+<div class="circle" id="sensorCircle">กำลังโหลด...</div>
+<div class="time-box" id="timeBox">เวลา: กำลังโหลด...</div>
 
 <script>
   const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
@@ -195,14 +173,13 @@
       const d1Value = d1.values?.[0]?.[0];
       const e1Value = e1.values?.[0]?.[0];
       const circle = document.getElementById("sensorCircle");
-      const statusText = document.getElementById("statusText");
-      const timeBox = document.getElementById("sensorTime");
+      const timeBox = document.getElementById("timeBox");
 
-      timeBox.textContent = "เวลาเซนเซอร์: " + (e1Value || "ไม่พบเวลา");
+      timeBox.textContent = "เวลา: " + (e1Value || "ไม่พบเวลา");
 
       if (!d1Value || isNaN(parseFloat(d1Value))) {
         circle.style.backgroundColor = "gray";
-        statusText.textContent = "ไม่พบข้อมูล";
+        circle.textContent = "ไม่พบข้อมูล";
         circle.classList.remove("pulse");
         return;
       }
@@ -217,26 +194,19 @@
 
       if (value <= 16.3333) {
         circle.style.backgroundColor = "red";
-        statusText.textContent = "ตรวจพบวัตถุ";
+        circle.textContent = "ตรวจพบวัตถุ";
       } else {
         circle.style.backgroundColor = "green";
-        statusText.textContent = "ไม่พบวัตถุ";
+        circle.textContent = "ไม่พบวัตถุ";
       }
     } catch (err) {
-      document.getElementById("statusText").textContent = "เกิดข้อผิดพลาด";
+      document.getElementById("sensorCircle").textContent = "เกิดข้อผิดพลาด";
       console.error(err);
     }
   }
 
-  function updateCurrentTime() {
-    const now = new Date();
-    document.getElementById("currentTime").textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString();
-  }
-
   setInterval(fetchSensorData, 1000);
-  setInterval(updateCurrentTime, 1000);
   fetchSensorData();
-  updateCurrentTime();
 
   function toggleModal() {
     document.getElementById("themeModal").style.display = "flex";
@@ -259,16 +229,10 @@
       body.style.background = "black";
       snow.style.display = "none";
     } else if (theme === "image") {
-      body.style.backgroundImage = "url('IMG_1851.jpeg')";
-      body.style.backgroundRepeat = "no-repeat";
+      body.style.background = "url('IMG_1851.jpeg')";
       body.style.backgroundSize = "cover";
-      body.style.backgroundPosition = "center center";
-      body.style.backgroundColor = ""; // ล้างพื้นหลังสีเดิม
-      header.style.backgroundColor = "#2A8CA4";
-      header.style.color = "white";
       snow.style.display = "block";
-  }
-
+    }
 
     document.getElementById("themeModal").style.display = "none";
   }
