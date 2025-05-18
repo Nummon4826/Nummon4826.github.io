@@ -4,15 +4,24 @@
   <meta charset="UTF-8">
   <title>Sensor Project</title>
   <style>
-     body{transition: background 0.6s ease, background-color 0.6s ease, color 0.6s ease;
-         }
-     header {
-      transition: background 0.6s ease, background-color 0.6s ease, color 0.6s ease;
+    body {
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: white;
+      background-size: cover;
+      background-position: center;
+      transition: background 0.5s;
+    }
+
+    header {
+      background-color: #007BFF;
+      color: white;
       padding: 15px;
+      text-align: center;
       font-size: 28px;
       font-weight: bold;
       position: relative;
-      z-index: 2; 
+      z-index: 2;
     }
 
     .theme-button {
@@ -234,31 +243,23 @@
   }
 
   function setTheme(theme) {
-  const body = document.body;
-  const snow = document.getElementById("snow");
-  const header = document.querySelector("header");
+    const body = document.body;
+    const snow = document.getElementById("snow");
 
-  if (theme === "white") {
-    body.style.background = "white";
-    header.style.backgroundColor = "#007BFF"; // ฟ้าเข้ม
-    header.style.color = "white";
-    snow.style.display = "none";
-  } else if (theme === "black") {
-    body.style.background = "black";
-    header.style.backgroundColor = "#444"; // เทาเข้ม
-    header.style.color = "white";
-    snow.style.display = "none";
-  } else if (theme === "image") {
-    body.style.background = "url('IMG_1851.jpeg')";
-    body.style.backgroundSize = "cover";
-    header.style.backgroundColor = "#2A8CA4"; // ครามตัดกับภาพหิมะ
-    header.style.color = "white";
-    snow.style.display = "block";
+    if (theme === "white") {
+      body.style.background = "white";
+      snow.style.display = "none";
+    } else if (theme === "black") {
+      body.style.background = "black";
+      snow.style.display = "none";
+    } else if (theme === "image") {
+      body.style.background = "url('IMG_1851.jpeg')";
+      body.style.backgroundSize = "cover";
+      snow.style.display = "block";
+    }
+
+    document.getElementById("themeModal").style.display = "none";
   }
-
-  document.getElementById("themeModal").style.display = "none";
-}
-
 
   // Snow animation
   const canvas = document.getElementById("snow");
