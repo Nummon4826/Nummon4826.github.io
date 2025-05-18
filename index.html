@@ -2,33 +2,54 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>ตรวจจับวัตถุจากเซนเซอร์</title>
+  <title>SENSOR PROJECT</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      text-align: center;
-      padding-top: 100px;
+      background: #e3f2fd;
       margin: 0;
+      overflow: hidden;
     }
 
-    .time-display {
+    /* Header */
+    header {
+      background-color: #2196F3;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Time Pop-up */
+    .time-popup {
       position: fixed;
-      top: 10px;
+      top: 20px;
       left: 20px;
-      font-size: 18px;
-      color: #333;
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 10;
       text-align: left;
+      font-size: 16px;
+      animation: fadeIn 1s ease-in-out;
     }
 
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    /* Sensor Circle */
     .status-circle {
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
       border-radius: 50%;
-      margin: 0 auto;
+      margin: 120px auto 0;
       background-color: gray;
       transition: background-color 0.5s;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
       position: relative;
     }
 
@@ -37,8 +58,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 150px;
-      height: 150px;
+      width: 160px;
+      height: 160px;
       background-color: inherit;
       border-radius: 50%;
       transform: translate(-50%, -50%);
@@ -53,7 +74,7 @@
         opacity: 0.5;
       }
       70% {
-        transform: translate(-50%, -50%) scale(1.5);
+        transform: translate(-50%, -50%) scale(1.6);
         opacity: 0;
       }
       100% {
@@ -62,35 +83,52 @@
       }
     }
 
-    .green {
-      background-color: #4CAF50;
-    }
-
-    .red {
-      background-color: #f44336;
-    }
+    .green { background-color: #4CAF50; }
+    .red { background-color: #f44336; }
 
     .label {
       font-size: 24px;
       margin-top: 20px;
       color: #333;
     }
+
+    /* Snow effect */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 1em;
+      user-select: none;
+      pointer-events: none;
+      z-index: 9999;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="time-display">
+  <header>SENSOR PROJECT</header>
+
+  <!-- Time Display -->
+  <div class="time-popup">
     <div id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
     <div id="sheetTime">เวลาจากเซนเซอร์: กำลังโหลด...</div>
   </div>
 
+  <!-- Sensor Circle -->
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
     const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-
     const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:D2?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
     const circle = document.getElementById("circle");
@@ -108,26 +146,25 @@
     function fetchData() {
       fetch(dataUrl)
         .then(res => {
-          if (!res.ok) throw new Error("ไม่สามารถเข้าถึงข้อมูลจาก Google Sheet ได้");
+          if (!res.ok) throw new Error("การเชื่อมต่อผิดพลาด");
           return res.json();
         })
         .then(data => {
           const values = data.values || [];
-          const valueD1 = values?.[0]?.[0]; // ค่าตรวจจับวัตถุ
-          const valueD2 = values?.[1]?.[0]; // เวลาเซนเซอร์
+          const d1 = values?.[0]?.[0];
+          const d2 = values?.[1]?.[0];
 
-          // แสดงเวลาเซนเซอร์
-          sheetTime.textContent = valueD2 ? "เวลาจากเซนเซอร์: " + valueD2 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
+          sheetTime.textContent = d2 ? "เวลาจากเซนเซอร์: " + d2 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
 
-          if (!valueD1 || isNaN(parseFloat(valueD1))) {
+          if (!d1 || isNaN(parseFloat(d1))) {
             circle.className = "status-circle";
             label.textContent = "ไม่พบข้อมูล";
             return;
           }
 
-          const num = parseFloat(valueD1);
+          const num = parseFloat(d1);
           if (lastValue !== null && num !== lastValue) {
-            location.reload(); // รีเฟรชหากค่าตรวจจับเปลี่ยน
+            location.reload();
           }
           lastValue = num;
 
@@ -139,18 +176,34 @@
             label.textContent = "ไม่พบวัตถุ";
           }
         })
-        .catch(err => {
-          console.error(err);
+        .catch(() => {
           circle.className = "status-circle";
           label.textContent = "เกิดข้อผิดพลาด";
           sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
         });
     }
 
+    // Snow Effect
+    function createSnowflake() {
+      const snowflake = document.createElement("div");
+      snowflake.classList.add("snowflake");
+      snowflake.style.left = Math.random() * window.innerWidth + "px";
+      snowflake.style.fontSize = Math.random() * 10 + 10 + "px";
+      snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
+      snowflake.innerText = "❄";
+      document.body.appendChild(snowflake);
+
+      setTimeout(() => {
+        snowflake.remove();
+      }, 5000);
+    }
+
+    setInterval(updateClock, 1000);
+    setInterval(fetchData, 1000);
+    setInterval(createSnowflake, 200);
+
     updateClock();
-    setInterval(updateClock, 1000); // อัปเดตเวลาปัจจุบันทุกวินาที
     fetchData();
-    setInterval(fetchData, 1000);   // เรียลไทม์: ดึงข้อมูลจาก Google Sheet ทุกวินาที
   </script>
 
 </body>
