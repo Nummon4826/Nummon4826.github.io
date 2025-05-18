@@ -10,22 +10,46 @@
       overflow: hidden;
       background: url("IMG_1851.jpeg") no-repeat center center fixed;
       background-size: cover;
+      transition: background 1s ease;
+    }
+
+    body.white-bg {
+      background: #ffffff;
     }
 
     /* Header */
     header {
-      background-color: #0d47a1; /* สีกรม */
+      background-color: #0d47a1;
       color: white;
       text-align: center;
       padding: 20px;
       font-size: 28px;
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      position: relative;
       z-index: 10;
+      position: relative;
     }
 
-    /* Time Pop-up (bottom-left) */
+    /* Toggle Button */
+    .toggle-bg-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background-color: #ffffff;
+      color: #0d47a1;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .toggle-bg-btn:hover {
+      background-color: #eeeeee;
+    }
+
+    /* Time Pop-up */
     .time-popup {
       position: fixed;
       bottom: 20px;
@@ -90,7 +114,7 @@
       color: #333;
     }
 
-    /* Snow effect (back layer) */
+    /* Snowflake */
     .snowflake {
       position: fixed;
       top: -10px;
@@ -108,19 +132,24 @@
         opacity: 0;
       }
     }
+
+    .hide-snow .snowflake {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <header>SENSOR PROJECT</header>
+  <header>
+    SENSOR PROJECT
+    <button class="toggle-bg-btn" onclick="toggleBackground()">เปลี่ยนพื้นหลัง</button>
+  </header>
 
-  <!-- Time Display -->
   <div class="time-popup">
     <div id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
     <div id="sheetTime">เวลาจากเซนเซอร์: กำลังโหลด...</div>
   </div>
 
-  <!-- Sensor Circle -->
   <div id="circle" class="status-circle"></div>
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
@@ -190,6 +219,11 @@
       snowflake.innerText = "❄";
       document.body.appendChild(snowflake);
       setTimeout(() => snowflake.remove(), 5000);
+    }
+
+    function toggleBackground() {
+      document.body.classList.toggle("white-bg");
+      document.body.classList.toggle("hide-snow");
     }
 
     setInterval(updateClock, 1000);
