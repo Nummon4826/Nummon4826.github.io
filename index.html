@@ -156,7 +156,7 @@
   <script>
     const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
     const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-    const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:D2?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
+    const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4/values/Sheet1!D1:E1?key=AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0`;
 
     const circle = document.getElementById("circle");
     const label = document.getElementById("label");
@@ -181,7 +181,7 @@
           const d1 = values?.[0]?.[0];
           const d2 = values?.[1]?.[0];
 
-          sheetTime.textContent = d2 ? "เวลาจากเซนเซอร์: " + d2 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
+          sheetTime.textContent = E1 ? "เวลาจากเซนเซอร์: " + E1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
 
           if (!d1 || isNaN(parseFloat(d1))) {
             circle.className = "status-circle";
