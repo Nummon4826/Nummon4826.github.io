@@ -4,24 +4,8 @@
   <meta charset="UTF-8">
   <title>Sensor Project</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: white;
-      background-size: cover;
-      background-position: center;
-      transition: background 0.5s;
-    }
-
-    header {
-      background-color: #007BFF;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      position: relative;
-      z-index: 2;
+    body, header {
+      transition: background 0.6s ease, background-color 0.6s ease, color 0.6s ease;
     }
 
     .theme-button {
@@ -75,17 +59,6 @@
       font-weight: bold;
     }
 
-    .time-box {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 10px 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-      z-index: 2;
-    }
-
     #snow {
       position: fixed;
       top: 0;
@@ -101,19 +74,13 @@
       height: 200px;
       border-radius: 50%;
       background-color: gray;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 20px;
-      font-weight: bold;
-      text-align: center;
-      margin: 100px auto;
+      margin: 100px auto 10px;
       position: relative;
       z-index: 1;
+      animation: ripple 2s infinite;
     }
 
-    .pulse {
+    .circle.pulse {
       animation: ripple 2s infinite;
     }
 
@@ -127,6 +94,37 @@
       100% {
         box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
       }
+    }
+
+    #statusText {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .time-box {
+      position: fixed;
+      bottom: 60px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+    .time-now {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      font-size: 14px;
+      color: #333;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 5px;
+      z-index: 2;
     }
   </style>
 </head>
@@ -155,8 +153,10 @@
   </div>
 </div>
 
-<div class="circle" id="sensorCircle">กำลังโหลด...</div>
-<div class="time-box" id="timeBox">เวลา: กำลังโหลด...</div>
+<div class="circle" id="sensorCircle"></div>
+<div id="statusText">กำลังโหลด...</div>
+<div class="time-box" id="sensorTime">เวลาเซนเซอร์: กำลังโหลด...</div>
+<div class="time-now" id="currentTime">เวลาปัจจุบัน: --:--:--</div>
 
 <script>
   const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
@@ -173,13 +173,14 @@
       const d1Value = d1.values?.[0]?.[0];
       const e1Value = e1.values?.[0]?.[0];
       const circle = document.getElementById("sensorCircle");
-      const timeBox = document.getElementById("timeBox");
+      const statusText = document.getElementById("statusText");
+      const timeBox = document.getElementById("sensorTime");
 
-      timeBox.textContent = "เวลา: " + (e1Value || "ไม่พบเวลา");
+      timeBox.textContent = "เวลาเซนเซอร์: " + (e1Value || "ไม่พบเวลา");
 
       if (!d1Value || isNaN(parseFloat(d1Value))) {
         circle.style.backgroundColor = "gray";
-        circle.textContent = "ไม่พบข้อมูล";
+        statusText.textContent = "ไม่พบข้อมูล";
         circle.classList.remove("pulse");
         return;
       }
@@ -194,19 +195,26 @@
 
       if (value <= 16.3333) {
         circle.style.backgroundColor = "red";
-        circle.textContent = "ตรวจพบวัตถุ";
+        statusText.textContent = "ตรวจพบวัตถุ";
       } else {
         circle.style.backgroundColor = "green";
-        circle.textContent = "ไม่พบวัตถุ";
+        statusText.textContent = "ไม่พบวัตถุ";
       }
     } catch (err) {
-      document.getElementById("sensorCircle").textContent = "เกิดข้อผิดพลาด";
+      document.getElementById("statusText").textContent = "เกิดข้อผิดพลาด";
       console.error(err);
     }
   }
 
+  function updateCurrentTime() {
+    const now = new Date();
+    document.getElementById("currentTime").textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString();
+  }
+
   setInterval(fetchSensorData, 1000);
+  setInterval(updateCurrentTime, 1000);
   fetchSensorData();
+  updateCurrentTime();
 
   function toggleModal() {
     document.getElementById("themeModal").style.display = "flex";
@@ -219,23 +227,32 @@
   }
 
   function setTheme(theme) {
-    const body = document.body;
-    const snow = document.getElementById("snow");
+  const body = document.body;
+  const snow = document.getElementById("snow");
+  const header = document.querySelector("header");
 
-    if (theme === "white") {
-      body.style.background = "white";
-      snow.style.display = "none";
-    } else if (theme === "black") {
-      body.style.background = "black";
-      snow.style.display = "none";
-    } else if (theme === "image") {
-      body.style.background = "url('IMG_1851.jpeg')";
-      body.style.backgroundSize = "cover";
-      snow.style.display = "block";
-    }
-
-    document.getElementById("themeModal").style.display = "none";
+  if (theme === "white") {
+    body.style.background = "white";
+    header.style.backgroundColor = "#007BFF"; // ฟ้าเข้ม
+    header.style.color = "white";
+    snow.style.display = "none";
+  } else if (theme === "black") {
+    body.style.background = "black";
+    header.style.backgroundColor = "#444"; // เทาเข้ม
+    header.style.color = "white";
+    snow.style.display = "none";
+  } else if (theme === "image") {
+    body.style.background = "url('IMG_1851.jpeg')";
+    body.style.backgroundSize = "cover";
+    body.style.backgroundPosition = "center";
+    header.style.backgroundColor = "#2A8CA4"; // ครามตัดกับภาพหิมะ
+    header.style.color = "white";
+    snow.style.display = "block";
   }
+
+  document.getElementById("themeModal").style.display = "none";
+}
+
 
   // Snow animation
   const canvas = document.getElementById("snow");
