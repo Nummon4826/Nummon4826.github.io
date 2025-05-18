@@ -172,10 +172,6 @@
       <p style="margin: 5px 0;"><button onclick="setTheme('desert')">🏜️ ธีมทะเลทราย</button></p>
     </div>
 </button>
-<audio id="alertSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>    
-<button id="soundToggle" class="toggle-bg-btn" style="top: 60px;" onclick="toggleSound()">
-  🔈 เปิดเสียง
-</button>
 
   </header>
 
@@ -231,12 +227,6 @@
 
         const num = parseFloat(d1);
         if (lastValue !== null && num !== lastValue) {
-  if (isSoundOn) {
-    document.getElementById("alertSound").play();
-  }
-  // location.reload(); // คอมเมนต์ไว้หากไม่ต้องการรีโหลด
-}
- {
           location.reload();
         }
         lastValue = num;
@@ -255,21 +245,6 @@
         sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
       });
   }
-    let isSoundOn = localStorage.getItem("sound") !== "off";
-const soundToggleBtn = document.getElementById("soundToggle");
-
-function updateSoundButton() {
-  soundToggleBtn.textContent = isSoundOn ? "🔈 เปิดเสียง" : "🔇 ปิดเสียง";
-}
-
-function toggleSound() {
-  isSoundOn = !isSoundOn;
-  localStorage.setItem("sound", isSoundOn ? "on" : "off");
-  updateSoundButton();
-}
-
-updateSoundButton(); // เรียกตอนโหลด
-
 
   function createSnowflake() {
     const snowflake = document.createElement("div");
@@ -321,7 +296,6 @@ updateSoundButton(); // เรียกตอนโหลด
   updateClock();
   fetchData();
 </script>
-
 
 </body>
 </html>
