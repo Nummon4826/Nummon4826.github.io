@@ -22,11 +22,34 @@
       animation: windEffect 5s infinite linear;
     }
 
-    @keyframes windEffect {
-      0% { background-position-x: 0; }
-      50% { background-position-x: 10px; }
-      100% { background-position-x: 0; }
-    }
+    .dust {
+  position: fixed;
+  top: 0;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(rgba(255, 215, 150, 0.15), rgba(255, 215, 150, 0));
+  pointer-events: none;
+  animation: dustMove linear forwards;
+  z-index: 0;
+  border-radius: 50%;
+}
+
+@keyframes dustMove {
+  0% {
+    transform: translateX(-100px) translateY(var(--startY));
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(110vw) translateY(var(--endY));
+    opacity: 0;
+  }
+}
 
     /* สีตัวอักษรตามธีม */
      .white-theme {
@@ -292,6 +315,32 @@
       createSnowflake();
     }
   }, 200);
+    
+    function createDust() {
+  if (localStorage.getItem("theme") !== "desert") return;
+
+  const dust = document.createElement("div");
+  dust.classList.add("dust");
+
+  const startY = Math.random() * window.innerHeight + "px";
+  const endY = (parseFloat(startY) + (Math.random() * 20 - 10)) + "px";
+
+  dust.style.setProperty("--startY", startY);
+  dust.style.setProperty("--endY", endY);
+  dust.style.animationDuration = (5 + Math.random() * 5) + "s";
+
+  document.body.appendChild(dust);
+
+  setTimeout(() => dust.remove(), 10000);
+}
+
+// เรียกฝุ่นทุก 700 มิลลิวินาที (เฉพาะธีมทะเลทราย)
+setInterval(() => {
+  if (localStorage.getItem("theme") === "desert") {
+    createDust();
+  }
+}, 700);
+
 
   updateClock();
   fetchData();
