@@ -215,6 +215,13 @@
   <div id="label" class="label">กำลังโหลดข้อมูล...</div>
 
   <script>
+    function startSweep() {
+      fetch("http://172.20.10.4/start")  // เปลี่ยนเป็น IP ของบอร์ดคุณ
+        .then(res => res.text())
+        .then(text => alert(text))
+        .catch(err => alert("Error: " + err));
+}
+    
   const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
   const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
   const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!D1:E1?key=${apiKey}`;
@@ -271,13 +278,6 @@
         sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
       });
   }
-
-    function activateArduino() {
-  fetch('http://172.20.10.4/start')  // ← แก้ให้เป็น IP ของบอร์ด
-    .then(response => response.text())
-    .then(data => console.log("Arduino ตอบกลับ:", data))
-    .catch(error => console.error("เกิดข้อผิดพลาด:", error));
-}
 
   function createSnowflake() {
     const snowflake = document.createElement("div");
