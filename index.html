@@ -2,66 +2,30 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>เว็บไซต์พื้นหลังเบลอ</title>
+  <title>เว็บไซต์ของฉัน</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
       height: 100vh;
-      overflow: hidden;
+      background-image: url('IMG_2001.jpeg'); /* ใส่ชื่อไฟล์ภาพของคุณ */
+      background-size: cover; /* ปรับภาพให้เต็มจอ */
+      background-position: center;
+      background-repeat: no-repeat;
       font-family: sans-serif;
-      background-color: #000; /* เผื่อโหลดภาพไม่ทัน จะเห็นพื้นหลังมืด */
     }
 
-    /* พื้นหลังเบลอแบบเบาลง + มืดนิดนึง */
-    .background {
-      background: url('IMG_2001.jpeg') no-repeat center center/cover;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      filter: blur(3px) brightness(0.6); /* เบลอน้อยลง + ทำให้มืดลง */
-      z-index: 0;
-    }
-
-    /* เนื้อหาอยู่ด้านบน */
     .content {
-      position: relative;
-      z-index: 1;
       color: white;
       text-align: center;
-    }
-
-    /* Header ตัดกับพื้นหลัง */
-    header {
-      background-color: rgba(0, 123, 255, 0.9); /* สีน้ำเงินเข้มแบบโปร่งนิดหน่อย */
-      color: white;
-      padding: 20px;
-      font-size: 1.8em;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* เงาตัดกับพื้นหลัง */
-    }
-
-    .main-text {
-      padding: 50px 20px;
-      font-size: 1.2em;
+      padding-top: 20%;
+      font-size: 2em;
+      text-shadow: 2px 2px 5px #000;
     }
   </style>
 </head>
 <body>
-
-  <!-- พื้นหลังเบลอ -->
-  <div class="background"></div>
-
-  <!-- เนื้อหา -->
   <div class="content">
-    <header>
-      หัวเว็บไซต์ของฉัน
-    </header>
-    <div class="main-text">
-      ภาพพื้นหลังเบลอน้อยลง มืดลงเล็กน้อย และหัวเว็บดูเด่นขึ้น 😊
-    </div>
+    ยินดีต้อนรับสู่เว็บไซต์ของฉัน
   </div>
-
 </body>
 </html>
