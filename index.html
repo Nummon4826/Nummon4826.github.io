@@ -2,359 +2,63 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>SENSOR PROJECT</title>
+  <title>เว็บไซต์พื้นหลังเบลอ</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
       margin: 0;
+      padding: 0;
+      height: 100vh;
       overflow: hidden;
-      background: #ffffff; /* เริ่มต้นเป็นสีขาว */
-      transition: background 1s ease;
+      font-family: sans-serif;
     }
 
-    body.bg-image {
-      background: url("IMG_1851.jpeg") no-repeat center center fixed;
-      background-size: cover;
-      transition: background 1s ease;
-    }
-    body.bg-desert {
-      background: url("ไม่มีชื่อ 13_20250520201346.jpeg") no-repeat center center fixed;
-      background-size: cover;
-      transition: background 1s ease;
-    }
-
-    .dust {
-  position: fixed;
-  top: 0;
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(rgba(255, 215, 150, 0.15), rgba(255, 215, 150, 0));
-  pointer-events: none;
-  animation: dustMove linear forwards;
-  z-index: 0;
-  border-radius: 50%;
-}
-
-@keyframes dustMove {
-  0% {
-    transform: translateX(-100px) translateY(var(--startY));
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.3;
-  }
-  90% {
-    opacity: 0.3;
-  }
-  100% {
-    transform: translateX(110vw) translateY(var(--endY));
-    opacity: 0;
-  }
-}
-
-    /* สีตัวอักษรตามธีม */
-     .white-theme {
-       color: #222;
-       text-shadow: 1px 1px 3px #000000;
-    }
-
-     .snow-theme {
-       color: #222;
-       text-shadow: 1px 1px 3px #000000;
-    }
-
-     .desert-theme {
-       color: #3a1e00;
-       text-shadow: 1px 1px 3px #ffffff;
-    }
-
-    /* Header */
-    header {
-      background-color: #0d47a1;
-      color: #ffffff;
-      text-align: center;
-      padding: 20px;
-      font-size: 28px;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 10;
-      position: relative;
-    }
-
-    .toggle-bg-btn {
+    /* พื้นหลังเบลอ */
+    .background {
+      background: url('IMG_2001.jpeg') no-repeat center center/cover;
       position: absolute;
-      top: 15px;
-      right: 20px;
-      background-color: #ffffff;
-      color: #0d47a1;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s ease;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      filter: blur(8px);
+      z-index: 0;
     }
 
-    .toggle-bg-btn:hover {
-      background-color: #eeeeee;
-    }
-
-    .time-popup {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      z-index: 10;
-      font-size: 14px;
-      color: #000000;
-    }
-
-    .status-circle {
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      margin: 120px auto 0;
-      background-color: gray;
-      transition: background-color 0.5s;
+    /* ชั้นเนื้อหาด้านบน */
+    .content {
       position: relative;
-      z-index: 5;
-    }
-
-    .status-circle::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 160px;
-      height: 160px;
-      background-color: inherit;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0.5;
-      animation: pulse 5s infinite;
-      z-index: -1;
-    }
-
-    @keyframes pulse {
-      0% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0.5;
-      }
-      70% {
-        transform: translate(-50%, -50%) scale(1.6);
-        opacity: 0;
-      }
-      100% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0;
-      }
-    }
-
-    .green { background-color: #4CAF50; }
-    .red { background-color: #f44336; }
-
-    .label {
-      font-size: 24px;
-      margin-top: 20px;
-      text-align: center;
-      color: inherit;
-    }
-
-    .snowflake {
-      position: fixed;
-      top: -10px;
-      color: white;
-      font-size: 1em;
-      user-select: none;
-      pointer-events: none;
       z-index: 1;
-      animation: fall linear infinite;
+      color: white;
+      text-align: center;
     }
 
-    @keyframes fall {
-      to {
-        transform: translateY(100vh);
-        opacity: 0;
-      }
+    header {
+      background-color: #007BFF;
+      color: white;
+      padding: 20px;
+      font-size: 1.8em;
     }
 
-    .hide-snow .snowflake {
-      display: none;
+    .main-text {
+      padding: 50px 20px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    SENSOR PROJECT
-    <button onclick="startSweep()">เปิดใช้งาน</button>
-    <button class="toggle-bg-btn" onclick="showThemeMenu()">เปลี่ยนพื้นหลัง</button>
-    <div id="themeMenu" style="display:none; position:fixed; top:70px; right:20px; background:white; border:1px solid #ccc; padding:10px; border-radius:8px; z-index:100;">
-      <p style="margin: 5px 0;"><button onclick="setTheme('white')">✅ ธีมสีขาว</button></p>
-      <p style="margin: 5px 0;"><button onclick="setTheme('snow')">❄️ ธีมหิมะ</button></p>
-      <p style="margin: 5px 0;"><button onclick="setTheme('desert')">🏜️ ธีมทะเลทราย</button></p>
+  <!-- พื้นหลังเบลอ -->
+  <div class="background"></div>
+
+  <!-- เนื้อหา -->
+  <div class="content">
+    <header>
+      หัวเว็บไซต์ของฉัน
+    </header>
+    <div class="main-text">
+      ยินดีต้อนรับสู่เว็บไซต์ของฉัน!<br>
+      พื้นหลังนี้คือภาพที่คุณอัปโหลดมา
     </div>
-</button>
-
-  </header>
-
-  <div class="time-popup">
-    <div id="timeDisplay">เวลาปัจจุบัน: --:--:--</div>
-    <div id="sheetTime">เวลาจากเซนเซอร์: กำลังโหลด...</div>
   </div>
-  <div id="themeMenu" style="display:none; position:fixed; top:70px; right:20px; background:white; border:1px solid #ccc; padding:10px; border-radius:8px; z-index:100;">
-    <p style="margin: 5px 0;"><button onclick="setTheme('white')">ธีมสีขาว</button></p>
-    <p style="margin: 5px 0;"><button onclick="setTheme('snow')">ธีมหิมะ</button></p>
-    <p style="margin: 5px 0;"><button onclick="setTheme('desert')">ธีมทะเลทราย</button></p>
-  </div>
-
-  <div id="circle" class="status-circle"></div>
-  <div id="label" class="label">กำลังโหลดข้อมูล...</div>
-
-  <script>
-    function startSweep() {
-      fetch("http://172.20.10.4/start")  // เปลี่ยนเป็น IP ของบอร์ดคุณ
-        .then(res => res.text())
-        .then(text => alert(text))
-        .catch(err => alert("Error: " + err));
-}
-    
-  const sheetId = "1-XE3bUaqAlEghhtvzgnvrCrIK74zZ8hCfPqVJDJUlj4";
-  const apiKey = "AIzaSyB1pWGTcnbwL78fWgmVuUTi-kZ_qpjZze0";
-  const dataUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!D1:E1?key=${apiKey}`;
-
-  const circle = document.getElementById("circle");
-  const label = document.getElementById("label");
-  const timeDisplay = document.getElementById("timeDisplay");
-  const sheetTime = document.getElementById("sheetTime");
-  const themeMenu = document.getElementById("themeMenu");
-
-  let lastValue = null;
-
-  function updateClock() {
-    const now = new Date();
-    timeDisplay.textContent = "เวลาปัจจุบัน: " + now.toLocaleTimeString('th-TH');
-  }
-
-  function fetchData() {
-    fetch(dataUrl)
-      .then(res => {
-        if (!res.ok) throw new Error("ผิดพลาดในการเชื่อมต่อ");
-        return res.json();
-      })
-      .then(data => {
-        const values = data.values || [];
-        const d1 = values?.[0]?.[0];
-        const e1 = values?.[0]?.[1];
-
-        sheetTime.textContent = e1 ? "เวลาจากเซนเซอร์: " + e1 : "เวลาจากเซนเซอร์: ไม่พบข้อมูล";
-
-        if (!d1 || isNaN(parseFloat(d1))) {
-          circle.className = "status-circle";
-          label.textContent = "ไม่พบข้อมูล";
-          return;
-        }
-
-        const num = parseFloat(d1);
-        if (lastValue !== null && num !== lastValue) {
-          location.reload();
-        }
-        lastValue = num;
-
-        if (num <= 19.948) {
-          circle.className = "status-circle red";
-          label.textContent = "พบวัตถุ";
-        } else {
-          circle.className = "status-circle green";
-          label.textContent = "ไม่พบวัตถุ";
-        }
-      })
-      .catch(() => {
-        circle.className = "status-circle";
-        label.textContent = "เกิดข้อผิดพลาด";
-        sheetTime.textContent = "เวลาจากเซนเซอร์: ไม่สามารถโหลดได้";
-      });
-  }
-
-  function createSnowflake() {
-    const snowflake = document.createElement("div");
-    snowflake.classList.add("snowflake");
-    snowflake.style.left = Math.random() * window.innerWidth + "px";
-    snowflake.style.fontSize = Math.random() * 10 + 10 + "px";
-    snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
-    snowflake.innerText = "❄";
-    document.body.appendChild(snowflake);
-    setTimeout(() => snowflake.remove(), 5000);
-  }
-
-      function createDust() {
-  if (localStorage.getItem("theme") !== "desert") return;
-
-  const dust = document.createElement("div");
-  dust.classList.add("dust");
-
-  const startY = Math.random() * window.innerHeight + "px";
-  const endY = (parseFloat(startY) + (Math.random() * 20 - 10)) + "px";
-
-  dust.style.setProperty("--startY", startY);
-  dust.style.setProperty("--endY", endY);
-  dust.style.animationDuration = (5 + Math.random() * 5) + "s";
-
-  document.body.appendChild(dust);
-
-  setTimeout(() => dust.remove(), 10000);
-}
-
-  function applyTheme(theme) {
-  document.body.classList.remove("white-bg", "bg-image", "bg-desert", "hide-snow");
-  document.body.classList.remove("white-theme", "snow-theme", "desert-theme");
-
-  if (theme === "white") {
-    document.body.classList.add("white-bg", "hide-snow", "white-theme");
-  } else if (theme === "snow") {
-    document.body.classList.add("bg-image", "snow-theme");
-  } else if (theme === "desert") {
-    document.body.classList.add("bg-desert", "hide-snow", "desert-theme");
-  }
-
-  localStorage.setItem("theme", theme);
-}
-
-  function setTheme(theme) {
-    applyTheme(theme);
-    themeMenu.style.display = "none";
-  }
-
-  function showThemeMenu() {
-    themeMenu.style.display = (themeMenu.style.display === "block") ? "none" : "block";
-  }
-
-  // โหลดธีมที่เคยเลือกไว้
-  const savedTheme = localStorage.getItem("theme") || "white";
-  applyTheme(savedTheme);
-
-  setInterval(updateClock, 1000);
-  setInterval(fetchData, 1000);
-  setInterval(() => {
-    if (localStorage.getItem("theme") === "snow") {
-      createSnowflake();
-    }
-  }, 200);
-    
-// เรียกฝุ่นทุก 700 มิลลิวินาที (เฉพาะธีมทะเลทราย)
-setInterval(() => {
-  if (localStorage.getItem("theme") === "desert") {
-    createDust();
-  }
-}, 700);
-
-
-  updateClock();
-  fetchData();
-</script>
 
 </body>
 </html>
